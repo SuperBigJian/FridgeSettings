@@ -1,0 +1,731 @@
+package com.midea.fridge.utils.fridgecontrolutil;
+
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.RemoteException;
+import android.util.Log;
+
+import com.google.gson.Gson;
+import com.midea.fridge.servant.fridgecontrol.IControlListener;
+import com.midea.fridge.servant.fridgecontrol.IUARTControl;
+
+import org.json.JSONObject;
+
+import java.util.concurrent.CopyOnWriteArrayList;
+
+/**
+ * Created by Administrator on 2016/10/20.
+ */
+public class FridgeControlUtil {
+    private static final String TAG = "FridgeControlUtil";
+
+    private static FridgeControlUtil instance = new FridgeControlUtil();
+    private static Context context;
+    private IUARTControl uartControl;
+    private Handler handler;
+    private Gson gson;
+    private CopyOnWriteArrayList<IReportListener> reportListeners;//数据上报监听
+    private boolean isServiceConnected;
+
+    private static final String MIDEA_SERVICE_PKGNAME = "com.midea.fridge.servant";
+    public static String ACTION_FRIDGE_FAULT = MIDEA_SERVICE_PKGNAME + ".fridgecontrol.fridgefault";
+    public static String ACTION_FRIDGE_STATUS = MIDEA_SERVICE_PKGNAME + ".fridgecontrol.fridgestatus";
+    public static String ACTION_FRIDGE_DOOR = MIDEA_SERVICE_PKGNAME + ".fridgecontrol.door";
+    public static String ACTION_WEIGHT_DATA = MIDEA_SERVICE_PKGNAME + ".fridgecontrol.weightdata";
+    public static String ACTION_DEVICEID = MIDEA_SERVICE_PKGNAME + ".fridgecontrol.deviceid";
+    public static String ACTION_FRIDGE_COMPLETE = MIDEA_SERVICE_PKGNAME + ".fridgecontrol.complete";
+
+    /**速冷模式*/
+    public final static int MODE_FASTCOOL = 1;
+    /**速冻模式*/
+    public final static int MODE_FASTFROZEN = 2;
+    /**智能模式*/
+    public final static int MODE_SMART = 3;
+
+    /**冷藏室ID*/
+    public static int ROOMID_LC = 1;
+    /**冷冻室ID*/
+    public static int ROOMID_LD = 2;
+    /**变温室ID*/
+    public static int ROOMID_BW = 3;
+
+    public static FridgeControlUtil getInstance() {
+        return instance;
+    }
+
+    public void init(Context thatContext) {
+        Log.i(TAG, "init");
+        context = thatContext;
+        bindService();
+    }
+
+    private FridgeControlUtil(){
+        handler = new Handler(Looper.getMainLooper());
+        gson = new Gson();
+        reportListeners = new CopyOnWriteArrayList<>();
+    }
+
+    /**
+     * 查询SN码
+     * @param onControlListener
+     */
+    public void querySn(final OnControlListener<String> onControlListener) {
+        Log.i(TAG, "querySn");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    querySn(onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "querySN";
+            uartControl.exec2(cmdType, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    onControlResponseUI(onControlListener, result);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void queryFridgeStatus(final OnControlListener<FridgeStatus> onControlListener) {
+        Log.i(TAG, "queryFridgeStatus");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    queryFridgeStatus(onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "queryFridgeStatus";
+            uartControl.exec2(cmdType, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeStatus fridgeStatus = gson.fromJson(result, FridgeStatus.class);
+                    onControlResponseUI(onControlListener, fridgeStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void queryFridgeExtendStatus(final OnControlListener<FridgeExtendStatus> onControlListener) {
+        Log.i(TAG, "queryFridgeExtendStatus");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    queryFridgeExtendStatus(onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "queryFridgeExtendStatus";
+            uartControl.exec2(cmdType, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeExtendStatus fridgeExtendStatus = gson.fromJson(result, FridgeExtendStatus.class);
+                    onControlResponseUI(onControlListener, fridgeExtendStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void forceDefrosting(final int value, final OnControlListener<FridgeExtendStatus> onControlListener) {
+        Log.i(TAG, "forceDefrosting");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    forceDefrosting(value, onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "forceDefrosting";
+            String[] params = {String.valueOf(value)};
+            uartControl.exec(cmdType, params, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeExtendStatus fridgeExtendStatus = gson.fromJson(result, FridgeExtendStatus.class);
+                    onControlResponseUI(onControlListener, fridgeExtendStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void forceRun(final OnControlListener<FridgeExtendStatus> onControlListener) {
+        Log.i(TAG, "forceRun");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    forceRun(onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "forceRun";
+            uartControl.exec2(cmdType, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeExtendStatus fridgeExtendStatus = gson.fromJson(result, FridgeExtendStatus.class);
+                    onControlResponseUI(onControlListener, fridgeExtendStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void disableDefrostingAndRun(final OnControlListener<FridgeExtendStatus> onControlListener) {
+        Log.i(TAG, "disableDefrostingAndRun");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    disableDefrostingAndRun(onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "disableDefrostingAndRun";
+            uartControl.exec2(cmdType, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeExtendStatus fridgeExtendStatus = gson.fromJson(result, FridgeExtendStatus.class);
+                    onControlResponseUI(onControlListener, fridgeExtendStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void queryFridgeFault(final OnControlListener<FridgeFault> onControlListener) {
+        Log.i(TAG, "queryFridgeFault");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    queryFridgeFault(onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "queryFridgeFault";
+            uartControl.exec2(cmdType, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeFault fridgeFault = gson.fromJson(result, FridgeFault.class);
+                    onControlResponseUI(onControlListener, fridgeFault);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void setRoomTemperature(final int roomId, final int temperature, final OnControlListener<FridgeStatus> onControlListener) {
+        Log.i(TAG, "setRoomTemperature");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    setRoomTemperature(roomId, temperature, onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "setRoomTemperature";
+            String[] params = {String.valueOf(roomId), String.valueOf(temperature)};
+            uartControl.exec(cmdType, params, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeStatus fridgeStatus = gson.fromJson(result, FridgeStatus.class);
+                    onControlResponseUI(onControlListener, fridgeStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void enableMode(final int modeType, final OnControlListener<FridgeStatus> onControlListener) {
+        Log.i(TAG, "enableMode");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    enableMode(modeType, onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "enableMode";
+            String[] params = {String.valueOf(modeType)};
+            uartControl.exec(cmdType, params, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeStatus fridgeStatus = gson.fromJson(result, FridgeStatus.class);
+                    onControlResponseUI(onControlListener, fridgeStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void setVtMode(final int modeType, final OnControlListener<FridgeStatus> onControlListener){
+        Log.i(TAG, "setVtMode");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    setVtMode(modeType, onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "setVtMode";
+            String[] params = {String.valueOf(modeType)};
+            uartControl.exec(cmdType, params, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeStatus fridgeStatus = gson.fromJson(result, FridgeStatus.class);
+                    onControlResponseUI(onControlListener, fridgeStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void disableMode(final int modeType, final OnControlListener<FridgeStatus> onControlListener) {
+        Log.i(TAG, "disableMode");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    disableMode(modeType, onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "disableMode";
+            String[] params = {String.valueOf(modeType)};
+            uartControl.exec(cmdType, params, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeStatus fridgeStatus = gson.fromJson(result, FridgeStatus.class);
+                    onControlResponseUI(onControlListener, fridgeStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void switchOn(final int roomId, final OnControlListener<FridgeStatus> onControlListener) {
+        Log.i(TAG, "switchOn");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    switchOn(roomId, onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "switchOn";
+            String[] params = {String.valueOf(roomId)};
+            uartControl.exec(cmdType, params, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeStatus fridgeStatus = gson.fromJson(result, FridgeStatus.class);
+                    onControlResponseUI(onControlListener, fridgeStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void shutDown(final int roomId, final OnControlListener<FridgeStatus> onControlListener) {
+        Log.i(TAG, "shutDown");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    shutDown(roomId, onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "shutDown";
+            String[] params = {String.valueOf(roomId)};
+            uartControl.exec(cmdType, params, new IControlListener.Stub() {
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeStatus fridgeStatus = gson.fromJson(result, FridgeStatus.class);
+                    onControlResponseUI(onControlListener, fridgeStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void setHandleLight(final int value) {
+        Log.i(TAG, "setHandleLight");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    setHandleLight(value);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "setHandleLight";
+            String[] params = {String.valueOf(value)};
+            uartControl.exec3(cmdType, params);
+        } catch (Exception e) {
+        }
+    }
+
+    public String getSN() {
+        Log.i(TAG, "getSN");
+        try {
+            return uartControl.getSN();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public String getDeviceId() {
+        Log.i(TAG, "getDeviceId");
+        try {
+            return uartControl.getDeviceId();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public void setShow(final int value, final OnControlListener<FridgeStatus> onControlListener) {
+        Log.i(TAG, "setShow");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    setShow(value, onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "setShow";
+            String[] params = {String.valueOf(value)};
+            uartControl.exec(cmdType, params, new IControlListener.Stub(){
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeStatus fridgeStatus = gson.fromJson(result, FridgeStatus.class);
+                    onControlResponseUI(onControlListener, fridgeStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    public void setHumidity(final int value, final OnControlListener<FridgeStatus> onControlListener) {
+        Log.i(TAG, "setHumidity");
+        if(!isServiceConnected) {
+            bindService(new MyServiceConnection(){
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    super.onServiceConnected(name, service);
+                    setHumidity(value, onControlListener);
+                }
+            });
+            return;
+        }
+        try {
+            String cmdType = "setHumidity";
+            String[] params = {String.valueOf(value)};
+            uartControl.exec(cmdType, params, new IControlListener.Stub(){
+                @Override
+                public void onControlResponse(String result) throws RemoteException {
+                    FridgeStatus fridgeStatus = gson.fromJson(result, FridgeStatus.class);
+                    onControlResponseUI(onControlListener, fridgeStatus);
+                }
+
+                @Override
+                public void onControlTimeout() throws RemoteException {
+                    onControlTimeoutUI(onControlListener);
+                }
+            });
+        } catch (Exception e) {
+            onControlExceptionUI(onControlListener);
+        }
+    }
+
+    /**注册数据上报监听*/
+    public void attachControlListener(IReportListener reportListener) {
+        reportListeners.add(reportListener);
+    }
+
+    /**取消数据上报监听*/
+    public void detachControlListener(IReportListener reportListener) {
+        reportListeners.remove(reportListener);
+    }
+
+    public void onReceive(String action, String data) {
+        if(ACTION_DEVICEID.equals(action)) {
+            try {
+                JSONObject object = new JSONObject(data);
+                String deviceId = object.optString("deviceId");
+                notify(deviceId);
+            } catch (Exception e) {
+            }
+        } else if(ACTION_FRIDGE_DOOR.equals(action)) {
+            try {
+                JSONObject object = new JSONObject(data);
+                int doorId = object.optInt("id");
+                int status = object.optInt("status");
+                notify(doorId, status);
+            } catch (Exception e) {
+            }
+        } else if(ACTION_FRIDGE_FAULT.equals(action)) {
+            FridgeFault fridgeFault = gson.fromJson(data, FridgeFault.class);
+            notify(fridgeFault);
+        } else if(ACTION_FRIDGE_STATUS.equals(action)) {
+            FridgeStatus fridgeStatus = gson.fromJson(data, FridgeStatus.class);
+            notify(fridgeStatus);
+        } else if(ACTION_WEIGHT_DATA.equals(action)) {
+            WeightData weightData = gson.fromJson(data, WeightData.class);
+            notify(weightData);
+        } else if(ACTION_FRIDGE_COMPLETE.equals(action)) {
+            try {
+                JSONObject object = new JSONObject(data);
+                int completeId = object.optInt("id");
+                notifyComplete(completeId);
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    private void notify(int doorId, int status) {
+        for(IReportListener reportListener:reportListeners) {
+            reportListener.onReportDoor(doorId, status);
+        }
+    }
+
+    private void notify(FridgeFault fridgeFault) {
+        for(IReportListener reportListener:reportListeners) {
+            reportListener.onReport(fridgeFault);
+        }
+    }
+
+    private void notify(FridgeStatus fridgeStatus) {
+        for(IReportListener reportListener:reportListeners) {
+            reportListener.onReport(fridgeStatus);
+        }
+    }
+
+    private void notify(WeightData weightData) {
+        for(IReportListener reportListener:reportListeners) {
+            reportListener.onReport(weightData);
+        }
+    }
+
+    private void notify(String deviceId) {
+        for(IReportListener reportListener:reportListeners) {
+            reportListener.onReport(deviceId);
+        }
+    }
+
+    private void notifyComplete(int completeId) {
+        for(IReportListener reportListener:reportListeners) {
+            reportListener.onReportComplete(completeId);
+        }
+    }
+
+    private class MyServiceConnection implements ServiceConnection {
+        public MyServiceConnection() {
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.i(TAG, "onServiceConnected");
+            isServiceConnected = true;
+            uartControl = IUARTControl.Stub.asInterface(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.i(TAG, "onServiceDisconnected");
+            isServiceConnected = false;
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    bindService();
+                }
+            }, 60000);
+        }
+    }
+
+    private void bindService() {
+        bindService(new MyServiceConnection());
+    }
+
+    private void bindService(ServiceConnection serviceConnection) {
+        Intent intent = new Intent("com.midea.fridge.servant.fridgecontrol.CommunicationService");
+        intent.setClassName("com.midea.fridge.servant", "com.midea.fridge.servant.fridgecontrol.CommunicationService");
+        boolean result = context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        Log.i(TAG, "bindService result:" + result);
+    }
+
+    private void onControlResponseUI(final OnControlListener onControlListener, final Object object) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                onControlListener.onControlResponse(object);
+            }
+        });
+    }
+
+    private void onControlTimeoutUI(final OnControlListener onControlListener) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                onControlListener.onControlTimeout();
+            }
+        });
+    }
+
+    private void onControlExceptionUI(final OnControlListener onControlListener) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                onControlListener.onControlException();
+            }
+        });
+    }
+
+}

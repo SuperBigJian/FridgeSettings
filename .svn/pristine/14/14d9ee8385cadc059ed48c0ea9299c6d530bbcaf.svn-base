@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.midea.fridgesettings.DeveloperActivity">
+
+    <TextView
+        android:id="@+id/topArea"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/topbar_height"
+        android:background="@drawable/top_area_bg"
+        android:gravity="center"
+        android:text="@string/app_name"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@drawable/divider_fgtab"
+        android:dividerHeight="1px"
+        android:orientation="vertical"
+        android:padding="20px"
+        android:showDividers="middle">
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/forceRun"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:padding="20px" />
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/defrostingALL"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:padding="20px" />
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/defrostingFreeze"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:padding="20px" />
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/defrostingCool"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:padding="20px" />
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/defrostingVary"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:padding="20px" />
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/displayMode"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:padding="20px" />
+
+        <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/tl_wifiInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="13px"
+            android:divider="@drawable/divider_fgtab"
+            android:dividerHeight="1px"
+            android:showDividers="middle">
+
+            <TableRow>
+
+                <TextView
+                    style="@style/DeviceInfoTableTitle"
+                    android:text="@string/mac" />
+
+                <TextView
+                    android:id="@+id/tvMac"
+                    style="@style/DeviceInfoTableContent" />
+            </TableRow>
+        </TableLayout>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/bottomArea"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottombar_height"
+        android:background="@color/barColor"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="250px"
+            android:layout_height="match_parent"
+            android:background="@drawable/bt_back_bg"
+            android:drawablePadding="25px"
+            android:drawableStart="@mipmap/ic_back"
+            android:gravity="center_vertical"
+            android:onClick="back"
+            android:paddingStart="44px"
+            android:text="@string/app_name"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/bt_back_txt" />
+    </LinearLayout>
+</LinearLayout>

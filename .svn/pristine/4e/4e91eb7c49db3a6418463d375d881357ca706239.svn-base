@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <RelativeLayout
+        android:layout_width="532px"
+        android:layout_height="440px"
+        android:layout_centerInParent="true"
+        android:background="#ffffff"
+        android:id="@+id/relativeLayout">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="69px"
+            android:text="信息提示"
+            android:textColor="#3E434A"
+            android:textSize="32px" />
+
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/title"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="44px"
+            android:text="取消预约后，温度将回到初始状态！"
+            android:textColor="#6A6A6A"
+            android:textSize="24px" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/submit"
+                android:layout_width="265px"
+                android:layout_height="80px"
+                android:layout_alignParentLeft="true"
+                android:background="@drawable/unfreezedialog_submit_bg" />
+            <Button
+                android:id="@+id/cancel"
+                android:layout_width="265px"
+                android:layout_height="80px"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="right"
+                android:background="@drawable/unfreezedialog_cancel_bg" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignBottom="@+id/relativeLayout"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="45dp"></RelativeLayout>
+</RelativeLayout>

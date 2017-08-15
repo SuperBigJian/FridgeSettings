@@ -1,0 +1,27 @@
+package com.midea.fridgesettings.view
+
+import android.content.Context
+import android.util.AttributeSet
+import android.widget.LinearLayout
+import android.widget.Switch
+import android.widget.TextView
+import com.midea.fridgesettings.R
+import org.jetbrains.anko.backgroundResource
+
+/**
+ * Created by chenjian on 17-6-12.
+ */
+class SwitchEntry(context: Context, attrs: AttributeSet?) : LinearLayout(context, attrs) {
+    val tvTitle: TextView = TextView(context, attrs)
+    val switch: Switch = Switch(context)
+    private val titleParams: LayoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+    private val switchParams: LayoutParams
+
+    init {
+        titleParams.weight = 1.0F
+        switchParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+        backgroundResource = R.mipmap.bg_wifi
+        addView(tvTitle, titleParams)
+        addView(switch, switchParams)
+    }
+}

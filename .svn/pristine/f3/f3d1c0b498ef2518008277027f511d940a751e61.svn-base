@@ -1,0 +1,11 @@
+// RomDownLoadListener.aidl
+package com.midea.update;
+
+// Declare any non-default types here with import statements
+
+interface RomDownLoadListener {
+    void onStart(int fileSize);
+    void onProgress(int downLoadSize, int fileSize);
+    void onFinish();
+    void onError();
+}

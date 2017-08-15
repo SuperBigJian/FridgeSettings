@@ -1,0 +1,109 @@
+请将最新的修改内容添加到顶部
+==========================================================================
+
+修改日期：2107-07-06 17:42
+修改问题：
+代码整理处理能处理的异常信息
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/AboutFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/AddressFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/AgreementFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/BluetoothFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/DateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/DisplayFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/PhoneFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/SoundFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UserFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/WifiFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/model/DataProvider.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2107-07-06 17:00
+修改问题：
+代码整理处理能处理的异常信息
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/AboutFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/DeveloperActivity.kt
+M       app/src/main/java/com/midea/fridgesettings/SettingsActivity.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UserFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/WifiFragment.kt
+
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2107-07-06 13:50
+修改问题：
+5442 【设置】在断网的情况下，在首页点需要连网的模块，有强制联网弹出框，点“去连网”，没有反应，应该跳转到新的设置页面
+
+修改文件：
+M       app/src/main/AndroidManifest.xml
+
+
+涉及项目：543/650/720
+修改人：汤森森
+==========================================================================
+
+==========================================================================
+
+
+修改日期：2107-07-06 11:10
+修改问题：
+5285 【设置】点击设置--关于冰箱中的重启应用按钮后，重启界面显示unknown oneshot boot target
+	
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/AboutFragment.kt
+
+涉及项目：543/650
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2107-07-05 17:50
+修改问题：
+5458 【我的】在“我的”界面登录默认图修改下
+5439 【设置】在线升级页面的冰箱图片需要显示为650冰箱
+	
+修改文件：
+M       app/build.gradle
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/res/layout/fragment_update.xml
+D       app/src/main/res/mipmap-mdpi/fridge.png
+        > moved to app/src/main/res/mipmap-mdpi/pic_543.png
+M       app/src/main/res/mipmap-mdpi/ic_profile.png
+A  +    app/src/main/res/mipmap-mdpi/pic_543.png
+        > moved from app/src/main/res/mipmap-mdpi/fridge.png
+A       app/src/main/res/mipmap-mdpi/pic_650.png
+
+
+涉及项目：543/650
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2107-07-05 16:50
+修改问题：
+5430 【设置】650需要屏蔽蓝牙显示
+5441 【蓝牙】543需要屏蔽蓝牙模块显示
+用户协议文字居中
+	
+修改文件：
+M       app/build.gradle
+M       app/src/main/java/com/midea/fridgesettings/model/DataProvider.kt
+M       app/src/main/res/layout/fragment_agreement.xml
+
+涉及项目：543/650
+修改人：陈剑
+==========================================================================

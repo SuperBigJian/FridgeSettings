@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_fg_tb_head"
+    android:layout_width="@dimen/fg_tab_width"
+    android:layout_height="@dimen/fg_tab_height"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/fg_tb_padding_start">
+
+    <TextView
+        android:id="@+id/tv_head_title"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        android:paddingBottom="14px"
+        android:textColor="#9B9B9B"
+        android:textSize="@dimen/text_fg_tab_head" />
+</LinearLayout>

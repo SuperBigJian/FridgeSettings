@@ -1,0 +1,78 @@
+package com.midea.fridgesettings
+
+import android.os.Bundle
+import android.os.Handler
+import android.os.Message
+import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import android.util.SparseArray
+import android.view.View
+import collections.forEach
+import com.midea.fridgesettings.BaseFragment.FragmentTag
+import com.midea.fridgesettings.model.getFragment
+
+class SettingsActivity : AppCompatActivity(), TabFragment.OnTabClickListener {
+
+    private val TAG: String = "SettingsActivity"
+    private val mFragments: SparseArray<BaseFragment> = SparseArray()
+    private val ON_FRAGMENT_SHOWING = 100
+
+    private val mHandler = object : Handler() {
+        override fun handleMessage(msg: Message?) {
+            super.handleMessage(msg)
+            when (msg?.what) {
+                ON_FRAGMENT_SHOWING -> {
+                    val tag = msg.obj as FragmentTag
+                    val fragmentNeedShow = findFramentByTag(tag)
+                    mFragments.forEach { _, baseFragment ->
+                        if (!baseFragment.same(fragmentNeedShow) && !baseFragment.isHidden) {
+                            fragmentManager.beginTransaction().hide(baseFragment).commit()
+                            if (baseFragment.userVisibleHint) {
+                                baseFragment.userVisibleHint = false
+                            }
+                        }
+                    }
+                    if (fragmentManager.findFragmentByTag(tag.toString()) == null) {
+                        fragmentManager.beginTransaction().add(R.id.fragment_container, fragmentNeedShow, tag.toString()).commit()
+                    } else {
+                        fragmentManager.beginTransaction().show(fragmentNeedShow).commit()
+                    }
+                    fragmentNeedShow.userVisibleHint = true
+                }
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onCreate()")
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_settings)
+        initFragment()
+    }
+
+    private fun initFragment() {
+        fragmentManager.beginTransaction().replace(R.id.tab_container, TabFragment()).commit()
+        val wifiFragment = findFramentByTag(FragmentTag.FRAGMENT_TAB_WIFI)
+        fragmentManager.beginTransaction().add(R.id.fragment_container, wifiFragment, FragmentTag.FRAGMENT_TAB_WIFI.toString()).commit()
+        wifiFragment.userVisibleHint = true
+    }
+
+    override fun onTabClick(tag: FragmentTag) {
+        mHandler.removeMessages(ON_FRAGMENT_SHOWING)
+        mHandler.sendMessage(mHandler.obtainMessage(ON_FRAGMENT_SHOWING, tag))
+    }
+
+    private fun findFramentByTag(tag: FragmentTag): BaseFragment {
+        var fragment: BaseFragment? = mFragments.get(tag.index)
+        if (fragment == null) {
+            fragment = getFragment(tag)
+            mFragments.put(tag.index, fragment)
+        }
+        return fragment
+    }
+
+    fun backToLauncher(view: View) {
+        onBackPressed()
+    }
+}
+

@@ -1,0 +1,49 @@
+package com.midea.fridgesettings
+
+import android.graphics.Color
+import kotlinx.android.synthetic.main.fragment_about.*
+import org.jetbrains.anko.sdk25.coroutines.onClick
+import org.jetbrains.anko.textColor
+import org.jetbrains.anko.textResource
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class AboutFragment(type: FragmentTag) : BaseFragment(type) {
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_about
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        with(kerLog) {
+            tvTitle.textSize = 24f
+            tvTitle.textColor = Color.rgb(103, 107, 108)
+            tvTitle.textResource = R.string.kernel_log
+            switch.setOnCheckedChangeListener { _, isChecked ->
+
+            }
+        }
+        with(sysLog) {
+            tvTitle.textSize = 24f
+            tvTitle.textColor = Color.rgb(103, 107, 108)
+            tvTitle.textResource = R.string.system_log
+            switch.setOnCheckedChangeListener { _, isChecked ->
+
+            }
+        }
+        llLog.onClick {
+            expandItem.toggle()
+        }
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+    }
+}

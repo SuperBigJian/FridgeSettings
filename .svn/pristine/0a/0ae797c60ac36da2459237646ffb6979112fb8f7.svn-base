@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20px">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="220px"
+        android:layout_marginTop="20px"
+        android:background="@mipmap/bg_wifi">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profile"
+            android:layout_width="160px"
+            android:layout_height="160px"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="40px"
+            android:src="@mipmap/ic_profile"
+            app:civ_border_color="#C1FFF1"
+            app:civ_border_width="8px" />
+
+        <TextView
+            android:id="@+id/nickName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="50px"
+            android:layout_toEndOf="@id/profile"
+            android:text="12135465464"
+            android:textColor="#4A4A4A"
+            android:textSize="42px" />
+
+        <ImageView
+            android:id="@+id/coin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@id/nickName"
+            android:layout_below="@id/nickName"
+            android:layout_marginTop="28px"
+            android:src="@mipmap/ic_coin" />
+
+        <TextView
+            android:id="@+id/tvMyCoin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/coin"
+            android:layout_marginStart="20px"
+            android:layout_toEndOf="@id/coin"
+            android:text="我的积分：0"
+            android:textColor="#30CCBC"
+            android:textSize="26px" />
+
+        <ImageButton
+            android:id="@+id/coinRule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:background="@mipmap/ic_coin_rule" />
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/order"
+        style="@style/UserItemStyle"
+        android:drawableStart="@mipmap/ic_order_control"
+        android:text="@string/order_control" />
+
+    <Button
+        android:id="@+id/favorite"
+        style="@style/UserItemStyle"
+        android:drawableStart="@mipmap/ic_favorite"
+        android:text="@string/my_favorite" />
+
+    <Button
+        android:id="@+id/message"
+        style="@style/UserItemStyle"
+        android:drawableStart="@mipmap/ic_msg"
+        android:text="@string/message_centre" />
+
+    <Button
+        android:id="@+id/account"
+        style="@style/UserItemStyle"
+        android:drawableStart="@mipmap/ic_account"
+        android:text="@string/account_security" />
+
+    <Button
+        android:id="@+id/quit"
+        android:layout_width="match_parent"
+        android:layout_height="100px"
+        android:layout_marginTop="20px"
+        android:background="@drawable/bt_ripple_bg"
+        android:stateListAnimator="@null"
+        android:text="@string/quit"
+        android:textColor="#FF0000"
+        android:textSize="36px" />
+</LinearLayout>

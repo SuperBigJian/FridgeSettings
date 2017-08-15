@@ -1,0 +1,296 @@
+package com.midea.fridgesettings
+
+import android.app.KeyguardManager
+import android.content.Context
+import android.os.Handler
+import android.os.Message
+import android.os.PowerManager
+import android.util.Log
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
+import com.midea.fridge.utils.config.FridgeConfigUtil
+import com.midea.fridge.utils.update.FridgeUpdateUtil
+import com.midea.fridgesettings.utils.LogUtils
+import com.midea.update.RomDownLoadListener
+import com.midea.update.UpGradeListener
+import kotlinx.android.synthetic.main.fragment_update.*
+import org.jetbrains.anko.imageResource
+import org.jetbrains.anko.textResource
+import java.lang.ref.WeakReference
+
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class UpdateFragment(type: FragmentTag = BaseFragment.FragmentTag.FRAGMENT_TAB_UPDATE) : BaseFragment(type) {
+    private val TAG = "UpdateFragment"
+
+    companion object {
+        private val REFRESH_UPDATE_UI = 1000
+        private val UPDATE_READY = 1010
+        private val UPDATE_NOT_READY = 1020
+        private val NO_UPDATE = 1030
+        private val UPDATE_ERROR = 1040
+
+        private val REFRESH_DOWNLOAD_UI = 2000
+        private val DOWNLOAD_START = 2010
+        private val DOWNLOAD_PROGRESS = 2020
+        private val DOWNLOAD_FINISH = 2030
+        private val DOWNLOAD_ERROR = 2040
+    }
+
+    private val update = FridgeUpdateUtil.getInstance()
+    private val checkListener by lazy { CheckUpdateListener() }
+    private val downloadListener by lazy { DownloadListener() }
+    private var downloadUrl: String = ""
+    private var curState: Int = 0
+    private var totalSize: Int = 100
+    private var progressSize: Int = 0
+
+    var isUpdating = false
+
+    private val handler = MyHandler(this)
+
+    class MyHandler(fragment: UpdateFragment) : Handler() {
+
+        val wr =  WeakReference(fragment)
+
+        override fun handleMessage(msg: Message?) {
+            val fag = wr.get() ?: return
+            fag.tv_curState.visibility = View.VISIBLE
+            fag.iv_check.visibility = View.INVISIBLE
+            fag.iv_check.clearAnimation()
+            fag.btUpdate.isEnabled = true
+            when (msg?.what) {
+                REFRESH_UPDATE_UI -> {
+                    fag.curState = msg.arg1
+                    fag.refreshUpdateUI(fag.curState)
+                }
+                REFRESH_DOWNLOAD_UI -> {
+                    fag.curState = msg.arg1
+                    fag.refreshDownLoadUI(fag.curState)
+                }
+            }
+        }
+    }
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_update
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        initView()
+        checkForUpdate()
+    }
+
+    private fun initView() {
+        pic_fridge.imageResource = BuildConfig.FRIDGE_PIC
+        device.text = FridgeConfigUtil.getInstance().fullName
+        version.text = android.os.Build.DISPLAY
+        btUpdate.visibility = View.VISIBLE
+        btUpdate.setOnClickListener { updateBTAction() }
+    }
+
+    fun checkForUpdate() {
+        iv_check.visibility = View.VISIBLE
+        iv_check.animation = getLoadingAnimation()
+        btUpdate.isEnabled = false
+        update.checkState(checkListener)
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+    private fun getLoadingAnimation(): Animation {
+        val loadingAnim = AnimationUtils.loadAnimation(context, R.anim.am_wifi_laoding)
+        loadingAnim.interpolator = LinearInterpolator()
+        return loadingAnim
+    }
+
+    private fun refreshUpdateUI(state: Int) {
+        Log.d(TAG, "refreshUpdateUI $state ")
+        when (state) {
+            UPDATE_READY -> {
+                progress.visibility = View.INVISIBLE
+                tv_curState.textResource = R.string.you_can_update_now
+                btUpdate.textResource = R.string.update
+                val tab = fragmentManager.findFragmentById(R.id.tabFragment)
+                if (tab is TabFragment) {
+                    tab.hasUpdate = true
+                }
+            }
+
+            UPDATE_NOT_READY -> {
+                progress.visibility = View.INVISIBLE
+                tv_curState.textResource = R.string.has_update_need_download
+                btUpdate.textResource = R.string.download
+            }
+
+            NO_UPDATE -> {
+                tv_curState.textResource = R.string.no_update
+                btUpdate.textResource = R.string.check_update
+            }
+
+            UPDATE_ERROR -> {
+                tv_curState.textResource = R.string.no_update
+                btUpdate.textResource = R.string.check_update
+            }
+        }
+
+    }
+
+    private fun refreshDownLoadUI(state: Int) {
+        Log.d(TAG, "refreshDownLoadUI $state ")
+        when (state) {
+            DOWNLOAD_START -> {
+                btUpdate.visibility = View.VISIBLE
+                btUpdate.textResource = R.string.cancelDownload
+                progress.visibility = View.VISIBLE
+                progress.max = totalSize
+            }
+
+            DOWNLOAD_PROGRESS -> {
+                btUpdate.visibility = View.VISIBLE
+                btUpdate.textResource = R.string.cancelDownload
+                progress.visibility = View.VISIBLE
+                tv_curState.textResource = R.string.downloading
+                progress.progress = progressSize
+            }
+
+            DOWNLOAD_FINISH -> {
+                tv_curState.textResource = R.string.check_rom
+                checkForUpdate()
+            }
+            DOWNLOAD_ERROR -> {
+                btUpdate.textResource = R.string.reDownload
+                tv_curState.textResource = R.string.download_fail
+            }
+        }
+    }
+
+    private fun updateBTAction() {
+        Log.d(TAG, "updateBTAction $curState")
+        when (curState) {
+            UPDATE_READY -> {
+                update.startUpdate()
+            }
+
+            UPDATE_NOT_READY, DOWNLOAD_ERROR -> {
+                iv_check.visibility = View.VISIBLE
+                iv_check.animation = getLoadingAnimation()
+                update.downloadUpdateRom(downloadUrl, downloadListener)
+            }
+
+            DOWNLOAD_PROGRESS -> {
+                update.stopUpdate()
+                isUpdating = false
+                progress.visibility = View.INVISIBLE
+                progress.progress = 0
+                checkForUpdate()
+            }
+
+            else -> {
+                checkForUpdate()
+            }
+        }
+    }
+
+    private inner class CheckUpdateListener : UpGradeListener.Stub() {
+        override fun onHaveNewRom() {
+            Log.d(TAG, "onHaveNewRom ")
+            handler.obtainMessage()
+            handler.sendMessage(handler.obtainMessage(REFRESH_UPDATE_UI, UPDATE_READY, -1))
+        }
+
+        override fun onDownloadNewRom(url: String?) {
+            Log.d(TAG, "onDownloadNewRom ")
+            downloadUrl = url ?: ""
+            handler.sendMessage(handler.obtainMessage(REFRESH_UPDATE_UI, UPDATE_NOT_READY, -1))
+        }
+
+        override fun onNoNewRom() {
+            Log.d(TAG, "onNoNewRom ")
+            handler.sendMessage(handler.obtainMessage(REFRESH_UPDATE_UI, NO_UPDATE, -1))
+        }
+
+        override fun onFailed() {
+            Log.d(TAG, "onFailed ")
+            handler.sendMessage(handler.obtainMessage(REFRESH_UPDATE_UI, UPDATE_ERROR, -1))
+        }
+    }
+
+    private inner class DownloadListener : RomDownLoadListener.Stub() {
+
+        override fun onStart(fileSize: Int) {
+            Log.d(TAG, "onStart ")
+            wakeUpAndUnlock()
+            isUpdating = true
+            totalSize = fileSize
+            handler.sendMessage(handler.obtainMessage(REFRESH_DOWNLOAD_UI, DOWNLOAD_START, -1))
+        }
+
+        override fun onProgress(downLoadSize: Int, fileSize: Int) {
+            Log.d(TAG, "onProgress ")
+            if (totalSize != fileSize) {
+                totalSize = fileSize
+                progress.max = fileSize
+            }
+            progressSize = downLoadSize
+            handler.sendMessage(handler.obtainMessage(REFRESH_DOWNLOAD_UI, DOWNLOAD_PROGRESS, -1))
+        }
+
+        override fun onFinish() {
+            Log.d(TAG, "onFinish ")
+            stopWakeUp()
+            isUpdating = false
+            handler.sendMessage(handler.obtainMessage(REFRESH_DOWNLOAD_UI, DOWNLOAD_FINISH, -1))
+        }
+
+        override fun onError() {
+            Log.d(TAG, "onError ")
+            stopWakeUp()
+            isUpdating = false
+            handler.sendMessage(handler.obtainMessage(REFRESH_DOWNLOAD_UI, DOWNLOAD_ERROR, -1))
+        }
+    }
+
+    override fun destroyViewAndThing() {
+        handler.removeCallbacksAndMessages(null)
+        update.stopUpdate()
+        super.destroyViewAndThing()
+    }
+
+    private val km by lazy { activity.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager }
+    private val pm by lazy { activity.getSystemService(Context.POWER_SERVICE) as PowerManager }
+    //获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
+    private val mWl: PowerManager.WakeLock by lazy { pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "bright") }
+
+    /**
+     * 点亮屏幕，并且常亮
+     */
+    private fun wakeUpAndUnlock() {
+        LogUtils.Logi(TAG, "wakeUpAndUnlock")
+        val kl = km.newKeyguardLock("unLock")
+        //解锁
+        kl.disableKeyguard()
+        mWl.setReferenceCounted(false)
+        mWl.acquire()
+    }
+
+    /**
+     * 取消常亮
+     */
+    private fun stopWakeUp() {
+        LogUtils.Logi(TAG, "stopWakeUp")
+        if (mWl.isHeld) {
+            LogUtils.Logi(TAG, "stopWakeUp, release")
+            mWl.release()
+        }
+    }
+}

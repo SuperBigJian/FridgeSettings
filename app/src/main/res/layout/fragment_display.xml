@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20px">
+
+    <com.midea.fridgesettings.view.ProgressEntry
+        android:id="@+id/pb_brightness"
+        android:layout_width="match_parent"
+        android:layout_height="100px"
+        android:background="@mipmap/bg_wifi"
+        android:gravity="center_vertical"
+        android:paddingEnd="40px"
+        android:paddingStart="40px" />
+
+    <com.midea.fridgesettings.view.ProgressEntry
+        android:id="@+id/pb_sensor"
+        android:layout_width="match_parent"
+        android:layout_height="100px"
+        android:layout_marginTop="20px"
+        android:background="@mipmap/bg_wifi"
+        android:gravity="center_vertical"
+        android:paddingEnd="40px"
+        android:paddingStart="40px" />
+</LinearLayout>

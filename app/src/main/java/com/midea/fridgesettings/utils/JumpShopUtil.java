@@ -1,0 +1,65 @@
+package com.midea.fridgesettings.utils;
+
+import android.content.Context;
+import android.content.Intent;
+
+/**
+ * 跳转商城APK的工具类
+ * Created by Administrator on 2016/12/29.
+ */
+public class JumpShopUtil {
+    private static final String HOST_ONLINE = "https://vdemo.mideav.com/";
+    private static final String HOST_TEST = "https://vdemo2.mideav.com/";
+
+    /**
+     * 商城首页
+     */
+    public static final String HOME_URL = getHost() + "#/app/";
+    /**
+     * 购物车页面
+     */
+    public static final String CART_URL = getHost() + "#/app/cart";
+
+    /**
+     * 搜索页面
+     */
+    public static final String SEARCH_URL = getHost() + "#/app/search";
+    /**
+     * 订单
+     */
+    public static final String ORDER_ALL_URL = getHost() + "#/app/order-list/all";
+    public static final String ORDER_TOPAY_URL = getHost() + "#/app/order-list/topay";
+    public static final String ORDER_TODELIVER_URL = getHost() + "#/app/order-list/todeliver";
+    public static final String ORDER_TORECEIVE_URL = getHost() + "#/app/order-list/toreceive";
+    public static final String ORDER_TORATE_URL = getHost() + "#/app/order-list/torate";
+    public static final String ORDER_REFUND_URL = getHost() + "#/app/order-list/refund";
+
+    public static void jumpToFridgeShop(Context context, String url, int navType, String title) {
+        try {
+            Intent intent = new Intent();
+            intent.setClassName("com.midea.fridge.shop", "com.midea.fridge.shop.activity.WebViewActivity");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("url", url);
+            intent.putExtra("navType", navType);
+            intent.putExtra("title", title);
+            context.startActivity(intent);
+        } catch (Exception e) {
+
+        }
+    }
+
+    public static void jumpToFridgeShop(Context context, String url, int navType) {
+        jumpToFridgeShop(context, url, navType, "");
+    }
+
+    public static void jumpToFridgeShop(Context context, String url) {
+        jumpToFridgeShop(context, url, -1, "");
+    }
+
+    private static String getHost() {
+        if (com.midea.fridgesettings.BuildConfig.ONLINE_FLAG) {
+            return HOST_ONLINE;
+        }
+        return HOST_TEST;
+    }
+}

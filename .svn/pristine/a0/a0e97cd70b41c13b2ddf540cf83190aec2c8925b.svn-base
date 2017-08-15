@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.midea.fridgesettings.SettingsActivity">
+
+    <TextView
+        android:id="@+id/topArea"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/topbar_height"
+        android:background="@drawable/top_area_bg"
+        android:gravity="center"
+        android:text="@string/app_name"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/tab_container"
+            android:layout_width="@dimen/fg_tab_width"
+            android:layout_height="match_parent"
+            android:background="#f2f6f8" />
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:foregroundGravity="center" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottomArea"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottombar_height"
+        android:background="@color/barColor"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="250px"
+            android:layout_height="match_parent"
+            android:background="@drawable/bt_back_bg"
+            android:drawablePadding="25px"
+            android:drawableStart="@mipmap/ic_back"
+            android:gravity="center_vertical"
+            android:onClick="backToLauncher"
+            android:paddingStart="44px"
+            android:text="@string/bt_back"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/bt_back_txt" />
+    </LinearLayout>
+
+</LinearLayout>

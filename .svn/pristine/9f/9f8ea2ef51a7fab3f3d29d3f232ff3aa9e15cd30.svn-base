@@ -1,0 +1,193 @@
+package com.midea.fridgesettings
+
+import android.content.Context
+import android.content.IntentFilter
+import android.net.wifi.WifiManager
+import android.os.Handler
+import android.os.Message
+import android.support.v7.widget.DefaultItemAnimator
+import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
+import com.midea.fridgesettings.adapter.CommonAdapter
+import com.midea.fridgesettings.adapter.RecyclerViewHolder
+import com.midea.fridgesettings.model.AccessPoint
+import com.midea.fridgesettings.wifi.*
+import kotlinx.android.synthetic.main.fragment_wifi.*
+import kotlinx.android.synthetic.main.wifi_state_area.*
+import org.jetbrains.anko.intentFor
+import org.jetbrains.anko.sdk25.coroutines.onClick
+import org.jetbrains.anko.singleTop
+import org.jetbrains.anko.textResource
+import org.jetbrains.anko.toast
+
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class WifiFragment(type: FragmentTag) : BaseFragment(type) {
+    private var wiFiStateReceiver: WiFiStateReceiver? = null
+    private var scanResultReceiver: ScanResultReceiver? = null
+    private var connectedStateReceiver: ConnectedStateReceiver? = null
+
+    private var wiFiHandler: WiFiHandler? = null
+    private var apAdapter: WifiAdapter? = null
+    private var currentAps: ArrayList<AccessPoint>? = null
+
+    private var mainHandler: Handler = object : Handler() {
+        override fun handleMessage(msg: Message?) {
+            super.handleMessage(msg)
+            Log.d("WIFIX", "message : " + msg?.what)
+            when (msg?.what) {
+                Global.AP_AVAILABLE -> {
+                    val data = msg.obj as ArrayList<AccessPoint>
+                    Log.d("WIFIX", "list : " + data.size)
+                    if (currentAps == null) {
+                        currentAps = ArrayList<AccessPoint>()
+                    }
+                    currentAps?.clear()
+                    currentAps?.addAll(data)
+
+                    if (apAdapter == null) {
+                        apAdapter = WifiAdapter(context, currentAps)
+                        rv_wifi.adapter = apAdapter
+                    } else {
+                        apAdapter?.notifyDataSetChanged()
+                    }
+                }
+                Global.ConnectState.AUTHENTICATE_FAILURE -> {
+                    toast("wrong password")
+                    wiFiHandler?.startScan()
+                }
+                Global.ConnectState.CONNECT_FAILURE, Global.ConnectState.CONNECT_SUCCESS -> wiFiHandler?.startScan()
+                Global.WiFiState.WIFI_ENABLED -> {
+                    wiFiHandler?.startScan()
+
+                }
+                Global.WiFiState.WIFI_DISABLED -> wiFiHandler?.openWifi()
+                else -> Log.d("WIFIX", "unknown message: " + msg?.what)
+            }
+        }
+    }
+
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_wifi
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        initData()
+        initReceiver()
+        initView()
+    }
+
+    private fun initData() {
+        currentAps = ArrayList<AccessPoint>()
+
+        Courier.setMainHander(mainHandler)
+        wiFiHandler = WiFiHandler.instance()
+        wiFiHandler?.startScan()
+
+        iv_wifiLoading.startAnimation(getLoadingAnimation())
+    }
+
+    private fun initReceiver() {
+        wiFiStateReceiver = WiFiStateReceiver()
+        val filter = IntentFilter()
+        filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION)
+        context.registerReceiver(wiFiStateReceiver, filter)
+
+        scanResultReceiver = ScanResultReceiver()
+        val scanFilter = IntentFilter()
+        scanFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
+        context.registerReceiver(scanResultReceiver, scanFilter)
+
+        connectedStateReceiver = ConnectedStateReceiver()
+        val connectFilter = IntentFilter()
+        connectFilter.addAction(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION)
+        connectFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
+        context.registerReceiver(connectedStateReceiver, connectFilter)
+    }
+
+    private fun initView() {
+        rv_wifi.itemAnimator = DefaultItemAnimator()
+
+        rv_wifi.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+
+        tv_refresh.onClick {
+            if (wiFiHandler?.isWifEnabled ?: false) {
+                refreshWifiList()
+            }
+        }
+    }
+
+    private fun refreshWifiList() {
+        wiFiHandler?.startScan() // 扫描wifi热点，前提是wifi已经打开
+    }
+
+    override fun onFirstUserVisible() {
+        super.onFirstUserVisible()
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+        context.unregisterReceiver(wiFiStateReceiver)
+        context.unregisterReceiver(scanResultReceiver)
+        context.unregisterReceiver(connectedStateReceiver)
+        Courier.recycle()
+    }
+
+    private fun getLoadingAnimation(): Animation {
+        val loadingAnim = AnimationUtils.loadAnimation(context, R.anim.am_wifi_laoding)
+        val lin = LinearInterpolator()
+        loadingAnim.interpolator = lin
+        return loadingAnim
+    }
+
+
+    inner class WifiAdapter(context: Context, var data: ArrayList<AccessPoint>?) : CommonAdapter<AccessPoint>(context, data) {
+        override fun onItemClick(itemView: View, pos: Int) {
+            Log.d("WIFIX", "onItemClick" + pos)
+            val ap = data?.get(pos) ?: return
+            if (ap.networkId.compareTo(0) < 0) {
+                val intent = intentFor<WifiConnectActivity>()
+                intent.singleTop()
+                startActivity(intent)
+            } else {
+                WiFiHandler.instance().connect(ap.networkId)
+            }
+        }
+
+        override fun onItemLongClick(itemView: View, pos: Int) {
+
+        }
+
+        override fun getItemLayoutId(viewType: Int): Int {
+            return R.layout.wifi_ap_item
+        }
+
+        override fun bindData(holder: RecyclerViewHolder?, position: Int, item: AccessPoint?) {
+            val accessPoint = data?.get(position)
+            holder?.getTextView(R.id.ssid)?.text = accessPoint?.ssid
+            holder?.getTextView(R.id.level)?.text = accessPoint?.signalStrength.toString()
+            holder?.getTextView(R.id.capabilities)?.text = accessPoint?.encryptionType
+            if (WiFiHandler.instance().isConnected(accessPoint)) {
+                holder?.getTextView(R.id.state)?.visibility = View.VISIBLE
+                holder?.getTextView(R.id.state)?.textResource = R.string.connect
+            } else {
+                holder?.getTextView(R.id.state)?.visibility = View.INVISIBLE
+            }
+        }
+    }
+}

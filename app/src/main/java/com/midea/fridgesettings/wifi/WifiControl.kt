@@ -1,0 +1,532 @@
+package com.midea.fridgesettings.wifi
+
+import android.content.Context
+import android.content.SharedPreferences
+import android.net.wifi.SupplicantState
+import android.net.wifi.WifiConfiguration
+import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager
+import android.os.SystemClock
+import android.util.Log
+import com.midea.fridgesettings.model.AccessPoint
+import java.text.DecimalFormat
+import java.util.*
+import kotlin.collections.ArrayList
+
+/**
+ * Created by chenjian on 17-7-3.
+ */
+object WifiControl {
+    private val TAG = "WifiControl"
+    private val WIFISP = "sabersaigao"
+    private lateinit var wifiManager: WifiManager
+    private lateinit var sp: SharedPreferences
+
+    /**
+     * Use WifiControl you mast initialize it first
+     *
+     * @param context
+     * @return true if WifiManager is initialize ,false or not
+     */
+    fun initialize(context: Context): Boolean {
+        try {
+            wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            sp = context.getSharedPreferences(WIFISP, Context.MODE_PRIVATE)
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "WifiControl Initialize Failed")
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    /**
+     * open wifi
+
+     * @return true if operation success,false or not
+     */
+    fun openWifi(): Boolean {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return false
+        }
+
+        when (wifiManager.wifiState) {
+            WifiManager.WIFI_STATE_ENABLING, WifiManager.WIFI_STATE_ENABLED -> return true
+            else -> return wifiManager.setWifiEnabled(true)
+        }
+    }
+
+    /**
+     * close Wifi
+
+     * @return true if operation success,false or not
+     */
+    fun closeWifi(): Boolean {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return false
+        }
+
+        when (wifiManager.wifiState) {
+            WifiManager.WIFI_STATE_DISABLED, WifiManager.WIFI_STATE_DISABLING -> return true
+            else -> return wifiManager.setWifiEnabled(false)
+        }
+    }
+
+    fun isWifEnabled(): Boolean {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return false
+        }
+        return wifiManager.isWifiEnabled
+    }
+
+    fun startScan() {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return
+        } else {
+            wifiManager.startScan()
+        }
+    }
+
+    fun getScanAp(): ArrayList<AccessPoint>? {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return null
+        }
+
+        val results = wifiManager.scanResults
+        if (results == null || results.size <= 0) {
+            Log.e(TAG, "ScanResults are null")
+            wifiManager.startScan()
+            return null
+        }
+
+        val aps = ArrayList<AccessPoint>()
+        for (result in results) {
+            if (result.SSID.isNullOrEmpty()) {
+                continue
+            }
+
+            val accessPoint = AccessPoint()
+            accessPoint.ssid = result.SSID
+            accessPoint.bssid = result.BSSID
+            accessPoint.encryptionType = result.capabilities
+
+            try {
+                var level = calculateSignalLevel(result.level, 5.0f) / 5.0
+                /**
+                 * in some language such as portuguese,format will fail for unknown reason
+                 */
+                Locale.setDefault(Locale.US)
+                val df = DecimalFormat("#.##")
+                level = java.lang.Double.parseDouble(df.format(level))
+                accessPoint.signalStrength = level.toFloat() * 100
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            val networkId = isConfigured(accessPoint)
+            if (networkId > -1) {
+                accessPoint.networkId = networkId
+            }
+            aps.add(accessPoint)
+        }
+        return aps
+    }
+
+    fun mergeRelativeAPs(aps: ArrayList<AccessPoint>): ArrayList<AccessPoint> {
+        val start = SystemClock.currentThreadTimeMillis()
+        val resultAPs = ArrayList<AccessPoint>()
+        while (aps.size > 0) {
+            for (i in aps.indices) {
+                val tempAp = aps[i]
+                val relativeAPs = ArrayList<AccessPoint>()
+                relativeAPs.add(tempAp)
+                (i + 1..aps.size - 1)
+                        .map { aps[it] }
+                        .filterTo(relativeAPs) { tempAp.ssid.trim() == it.ssid.trim() && tempAp.bssid != it.bssid }
+
+                aps.removeAll(relativeAPs)
+                if (relativeAPs.size > 1) {
+                    val mainAp = relativeAPs[0]
+                    relativeAPs.removeAt(0)
+                    mainAp.relativeAPs = relativeAPs
+                    resultAPs.add(mainAp)
+                    break
+                } else {
+                    resultAPs.add(tempAp)
+                    break
+                }
+            }
+        }
+        Collections.sort(resultAPs)
+        Log.d(TAG, "mergeRelativeAPs: " + (SystemClock.currentThreadTimeMillis() - start))
+        return resultAPs
+    }
+
+    /**
+     * create a WifiConfiguration for connection operation
+
+     * @param ap A Wifi hotspot
+     * *
+     * @return
+     */
+    fun createConfiguration(ap: AccessPoint): WifiConfiguration {
+        val SSID = ap.ssid
+        Log.d(TAG, "create a config for " + SSID)
+        val config = WifiConfiguration()
+        config.SSID = "\"" + SSID + "\""
+
+        val encryptionType = ap.encryptionType
+        val password = ap.password
+        if (encryptionType.toLowerCase().contains("wep")) {
+            Log.d(TAG, "encryptionType: wep")
+            /**
+             * special handling according to password length is a must for wep
+             */
+            val i = password.length
+            if ((i == 10 || i == 26 || i == 58) && password.matches("[0-9A-Fa-f]*".toRegex())) {
+                config.wepKeys[0] = password
+            } else {
+                config.wepKeys[0] = "\"" + password + "\""
+            }
+
+            config.allowedAuthAlgorithms
+                    .set(WifiConfiguration.AuthAlgorithm.SHARED)
+            config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN)
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+            config.wepTxKeyIndex = 0
+        } else if (encryptionType.toLowerCase().contains("wpa")) {
+            Log.d(TAG, "encryptionType: wpa")
+            config.preSharedKey = "\"" + password + "\""
+
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK)
+        } else {
+            Log.d(TAG, "encryptionType: open")
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+        }
+        return config
+    }
+
+    /**为隐藏SSID创建Configuration */
+    fun createHideWifiConfiguration(ap: AccessPoint): WifiConfiguration {
+        val SSID = ap.ssid
+        Log.d(TAG, "create a hide config for " + SSID)
+        val encryptionType = ap.encryptionType
+        val password = ap.password
+        val config = WifiConfiguration()
+        config.allowedAuthAlgorithms.clear()
+        config.allowedGroupCiphers.clear()
+        config.allowedKeyManagement.clear()
+        config.allowedPairwiseCiphers.clear()
+        config.allowedProtocols.clear()
+        config.SSID = "\"" + SSID + "\""
+        if (encryptionType.toLowerCase().contains("wep")) {
+            config.hiddenSSID = true
+            config.wepKeys[0] = "\"" + password + "\""
+            config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104)
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+            config.wepTxKeyIndex = 0
+        } else if (encryptionType.toLowerCase().contains("wpa")) {
+            config.preSharedKey = "\"" + password + "\""
+            config.hiddenSSID = true
+            config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP)
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK)
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP)
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP)
+            config.status = WifiConfiguration.Status.ENABLED
+        } else {//no password
+            config.hiddenSSID = true
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+        }
+        return config
+    }
+
+
+    /**
+     * get a list of accesspoints which were connected to and configured before
+     *
+     * @return List
+     */
+    fun getConfiguredAp(): List<WifiConfiguration>? {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return null
+        } else {
+            return wifiManager.configuredNetworks
+        }
+    }
+
+    /**
+     * check if a hotspot has ever connected or not been removed
+     *
+     * @param ap
+     *
+     * @return configured networkId,or -1 if not found
+     */
+    fun isConfigured(ap: AccessPoint): Int {
+        val configurations = getConfiguredAp()
+        if (configurations == null || configurations.isEmpty()) {
+            Log.d(TAG, ap.ssid + " Config Aps are empty")
+            return -1
+        }
+
+        return configurations.firstOrNull {
+            /*
+            SSID in WifiConfiguration is always like "CCMC",
+            and BSSID is always null
+            */
+            it.SSID.replace("\"", "").trim() == ap.ssid
+        }?.networkId ?: -1
+    }
+
+    fun connect(ap: AccessPoint): Boolean {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return false
+        }
+
+        var networkId: Int = isConfigured(ap)
+
+        if (networkId >= 0 && !ap.passwordChange) {
+            return wifiManager.enableNetwork(networkId, true)
+        } else {
+            /**
+             * networkId is bigger than 0 in most time, 0 in few time and smaller than 0 in no time
+             */
+            if (ap.isHideSSID) {
+                networkId = wifiManager.addNetwork(createHideWifiConfiguration(ap))
+            } else {
+                networkId = wifiManager.addNetwork(createConfiguration(ap))
+            }
+
+        }
+
+        if (networkId < 0) {
+            return false
+        }
+
+        if (wifiManager.enableNetwork(networkId, true)) {
+            /**
+             * connect operation success,not trully connected
+             */
+            return true
+        } else {
+            /**
+             * some useless help to reconnect while enableNetwork fail
+             */
+            if (wifiManager.saveConfiguration()) {
+                if (wifiManager.reconnect()) {
+                    return true
+                }
+            }
+            return false
+        }
+    }
+
+    fun connect(networkId: Int): Boolean {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return false
+        }
+
+        if (networkId < 0) return false
+
+        if (wifiManager.enableNetwork(networkId, true)) {
+            /**
+             * connect operation success,not trully connected
+             */
+            return true
+        } else {
+            /**
+             * some useless help to reconnect while enableNetwork fail
+             */
+            if (wifiManager.saveConfiguration()) {
+                if (wifiManager.reconnect()) {
+                    return true
+                }
+            }
+            return false
+        }
+    }
+
+    /**
+     * return a no_null WifiInfo when some wifi is connected,and null when wifi disconnected
+     *
+     * @return
+     */
+    fun getConnectionInfo(): WifiInfo? {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return null
+        }
+
+        val info = wifiManager.connectionInfo
+
+        if (SupplicantState.COMPLETED != info.supplicantState) {
+            return null
+        }
+
+        if (-1 == info.networkId) {
+            return null
+        }
+
+        if (0 == info.ipAddress) {
+            return null
+        }
+
+        return info
+    }
+
+    /**
+     * check if the certain ap is connected
+     *
+     * @param ap
+     * *
+     * @return
+     */
+    fun isConnected(ap: AccessPoint): Boolean {
+        val info = getConnectionInfo()
+
+        if (!wifiManager.isWifiEnabled) {
+            return false
+        }
+
+        if (info == null) {
+            return false
+        }
+
+        if (info.ssid.replace("\"", "").trim() == ap.ssid) {
+            return true
+        }
+
+        return false
+    }
+
+    /**
+     * disconnect the current connected hotspot
+     *
+     * @return
+     */
+    fun disconnect(): Boolean {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return false
+        }
+        return wifiManager.disconnect()
+    }
+
+    /**
+     * forget a ever connected hotspot
+
+     * @param networkId
+     * *
+     * @return
+     */
+    fun remove(networkId: Int): Boolean {
+        if (wifiManager !is WifiManager) {
+            Log.e(TAG, "WifiManager is error, Did you initialize it ?")
+            return false
+        }
+        /**
+         * remove operation always fails above api 21,so we try many times
+         */
+        var isRemoved = wifiManager.removeNetwork(networkId)
+        if (!isRemoved) {
+            var index = 0
+            while (!isRemoved && index < 10) {
+                index++
+                isRemoved = wifiManager.removeNetwork(networkId)
+            }
+        }
+
+        if (isRemoved) {
+            wifiManager.saveConfiguration()
+        }
+
+        return isRemoved
+    }
+
+    fun calculateSignalLevel(rssi: Int, numLevels: Float): Float {
+        val MIN_RSSI = -100
+        val MAX_RSSI = -55
+        if (rssi <= MIN_RSSI) {
+            return 0f
+        } else if (rssi >= MAX_RSSI) {
+            return numLevels
+        } else {
+            val inputRange = (MAX_RSSI - MIN_RSSI).toFloat()
+            val outputRange = numLevels
+            return (rssi - MIN_RSSI).toFloat() * outputRange / inputRange
+        }
+    }
+
+    val SECURITY_NONE = 0
+    val SECURITY_WEP = 1
+    val SECURITY_PSK = 2
+    val SECURITY_EAP = 3
+
+    enum class PskType {
+        UNKNOWN,
+        WPA,
+        WPA2,
+        WPA_WPA2
+    }
+
+    fun getSecurity(ap: AccessPoint): Int {
+        if (ap.encryptionType.toLowerCase().contains("wep")) {
+            return SECURITY_WEP
+        } else if (ap.encryptionType.toLowerCase().contains("psk")) {
+            return SECURITY_PSK
+        } else if (ap.encryptionType.toLowerCase().contains("eap")) {
+            return SECURITY_EAP
+        }
+        return SECURITY_NONE
+    }
+
+    fun getPskType(ap: AccessPoint): PskType {
+        val wpa = ap.encryptionType.toLowerCase().contains("wpa-psk")
+        val wpa2 = ap.encryptionType.toLowerCase().contains("wpa2-psk")
+        if (wpa2 && wpa) {
+            return PskType.WPA_WPA2
+        } else if (wpa2) {
+            return PskType.WPA2
+        } else if (wpa) {
+            return PskType.WPA
+        } else {
+            return PskType.UNKNOWN
+        }
+    }
+
+    fun isLock(ap: AccessPoint): Boolean {
+        return getSecurity(ap) != SECURITY_NONE
+    }
+
+    fun intToIp(i: Int): String {
+        return "${i and 0xff}.${i shr 8 and 0xff}.${i shr 16 and 0xff}.${i shr 24 and 0xff}"
+    }
+
+    fun getSavedPsd(key: String) = sp.getString(key, "") ?: ""
+
+    fun savePsd(key: String, psd: String) {
+        val editor = sp.edit()
+        editor.putString(key, psd)
+        editor.apply()
+    }
+
+    fun removeSavedPsd(key: String) {
+        val editor = sp.edit()
+        editor.remove(key)
+        editor.apply()
+    }
+}
+

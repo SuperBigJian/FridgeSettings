@@ -1,0 +1,12 @@
+// UpGradeManager.aidl
+package com.midea.update;
+import com.midea.update.UpGradeListener;
+import com.midea.update.RomDownLoadListener;
+
+// Declare any non-default types here with import statements
+
+interface UpGradeManager {
+    void checkUpGrade(UpGradeListener upGradeListener);
+    void downLoad(String url, RomDownLoadListener romDownLoadListener);
+    void install();
+}

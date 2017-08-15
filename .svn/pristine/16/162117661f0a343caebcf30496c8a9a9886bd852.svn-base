@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">设置</string>
+    <string name="bt_back">首页</string>
+    <string name="connect">已连接</string>
+    <string name="not_connect">未连接</string>
+    <string name="connect_failed">连接失败</string>
+    <string name="on_connect">正在连接...</string>
+    <string name="choose_network">选择网络...</string>
+    <string name="refresh">刷新</string>
+    <string name="please_refresh_wifi">无可连接的Wi-Fi网络，请刷新重试。</string>
+    <string name="scanning_again">正在重新扫描…</string>
+</resources>

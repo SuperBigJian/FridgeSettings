@@ -1,0 +1,37 @@
+package com.midea.fridgesettings.model
+
+import com.midea.fridgesettings.BaseFragment
+import com.midea.fridgesettings.wifi.WifiControl
+import java.util.*
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+
+data class FragmentTabInfo(val icon: Int, val title: String, val tabType: BaseFragment.FragmentTag, var isSelect: Boolean = false)
+
+data class AccessPoint(var ssid: String = "",
+                       var bssid: String = "",
+                       var password: String = "",
+                       var signalStrength: Float = 0f,
+                       var encryptionType: String = "",
+                       var networkId: Int = -1,
+                       var relativeAPs: ArrayList<AccessPoint> = ArrayList<AccessPoint>()) : Comparable<AccessPoint> {
+
+
+    override fun compareTo(other: AccessPoint): Int {
+        if (WifiControl.isConnected(this) && !WifiControl.isConnected(other)) {
+            return -1
+        } else if (!WifiControl.isConnected(this) && WifiControl.isConnected(other)) {
+            return 1
+        } else {
+            if (this.signalStrength > other.signalStrength) {
+                return -1
+            } else if (this.signalStrength == other.signalStrength) {
+                return 0
+            }
+        }
+        return 1
+    }
+}
+

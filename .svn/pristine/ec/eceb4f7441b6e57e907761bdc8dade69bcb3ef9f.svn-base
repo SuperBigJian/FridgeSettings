@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#7f7f7f7f">
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="640px"
+        android:layout_height="300px"
+        android:layout_centerInParent="true"
+        android:background="#ffffff">
+
+        <com.midea.fridge.pad.widget.FontTextView
+            android:id="@+id/title"
+            android:layout_width="fill_parent"
+            android:layout_height="68px"
+            android:background="#4DB4C9"
+            android:gravity="center_vertical"
+            android:paddingLeft="36px"
+            android:text="软件更新"
+            android:textColor="#FFFFFF"
+            android:textSize="32px"
+            app:font="fonts/yahei.ttc" />
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_above="@+id/cancel"
+            android:layout_marginBottom="5px"
+            android:layout_marginLeft="36px"
+            android:layout_marginRight="36px"
+            android:layout_marginTop="92px">
+
+            <com.midea.fridge.pad.widget.FontTextView
+                android:id="@+id/content"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:textColor="#565656"
+                android:textSize="24px"
+                app:font="fonts/yahei.ttc" />
+        </ScrollView>
+
+
+        <Button
+            android:id="@+id/cancel"
+            android:layout_width="252px"
+            android:layout_height="50px"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="12px"
+            android:layout_marginLeft="50px"
+            android:background="@drawable/button_quxiao" />
+
+        <Button
+            android:id="@+id/submit"
+            android:layout_width="252px"
+            android:layout_height="50px"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="12px"
+            android:layout_marginRight="50px"
+            android:background="@drawable/button_gengxin" />
+
+
+    </RelativeLayout>
+
+</RelativeLayout>

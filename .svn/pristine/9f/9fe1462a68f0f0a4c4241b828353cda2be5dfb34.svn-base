@@ -1,0 +1,345 @@
+package com.midea.fridgesettings.wifi
+
+import android.app.Dialog
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.net.NetworkInfo
+import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager
+import android.os.Bundle
+import android.os.Handler
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
+import android.util.Log
+import android.view.View
+import android.view.Window
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
+import android.view.inputmethod.InputMethodManager
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
+import com.midea.fridgesettings.R
+import com.midea.fridgesettings.WifiFragment
+import com.midea.fridgesettings.model.AccessPoint
+import kotlinx.android.synthetic.main.wifi_connect_dialog.*
+import org.jetbrains.anko.textResource
+
+
+/**
+ * Created by chenjian on 17-6-7.
+ */
+class WifiConnectDialog(context: Context, val adapter: WifiFragment.WifiAdapter, var pos: Int, var accessPoint: AccessPoint) : Dialog(context) {
+    private val TAG = "WifiConnectDialog"
+
+    private val mCheckBox by lazy { dialogPsd.findViewById(R.id.cb_wifi_dialog_showpd) as CheckBox }
+    private val mEditText by lazy { dialogPsd.findViewById(R.id.et_wifi_dialog_password) as EditText }
+
+    private val tvStrength by lazy { dialogInfo.findViewById(R.id.tl_tv_wifiStrength) as TextView }
+    private val tvSpeed by lazy { dialogInfo.findViewById(R.id.tl_tv_wifiSpeed) as TextView }
+    private val tvAddress by lazy { dialogInfo.findViewById(R.id.tl_tv_ipAddress) as TextView }
+    private val tvSecurity by lazy { dialogInfo.findViewById(R.id.tl_tv_security) as TextView }
+
+    private val ivConnecting by lazy { dialogCon.findViewById(R.id.iv_wifiConnecting) as ImageView }
+    private val tvState by lazy { dialogCon.findViewById(R.id.tv_wifiConnectedState) as TextView }
+
+    private var wifiInfo: WifiInfo? = null
+    private val handler = Handler()
+
+    private var isConnecting = false
+
+    private var connectStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+
+            if (intent.action == WifiManager.SUPPLICANT_STATE_CHANGED_ACTION) {
+                /**
+                 * when some certain ap connects fail because of wrong password,here comes a broadcast
+                 */
+                val error = intent.getIntExtra(WifiManager.EXTRA_SUPPLICANT_ERROR, 0)
+                if (WifiManager.ERROR_AUTHENTICATING == error) {
+                    Log.d(TAG, "ERROR_AUTHENTICATING: 密码错误")
+                    tvState.textSize = 30f
+                    tvState.textResource = R.string.password_error
+                    return conFailUI() //密码错误
+                }
+            }
+
+            if (intent.action == WifiManager.NETWORK_STATE_CHANGED_ACTION) {
+                val info = intent.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
+                if (null != info) {
+                    val state = info.detailedState
+                    Log.d(TAG, "NetworkInfo: \t $state \n \t $info")
+                    val wifiInfo = intent.getParcelableExtra<WifiInfo>(WifiManager.EXTRA_WIFI_INFO)
+                    Log.d(TAG, "WifiInfo \t $wifiInfo \n \t $accessPoint")
+                    when (state) {
+                        NetworkInfo.DetailedState.CONNECTED -> {
+                            if (info.isConnectedOrConnecting && info.isConnected && isConnecting) {
+                                if (accessPoint.bssid == wifiInfo.bssid)
+                                    dismiss() //连接成功
+                            }
+                        }
+
+                        NetworkInfo.DetailedState.FAILED, NetworkInfo.DetailedState.DISCONNECTED -> {
+                            if (!isConnecting) return
+                            tvState.textSize = 30f
+                            tvState.textResource = R.string.connect_refuse
+                            conFailUI() //连接失败
+                        }
+                        else -> {
+                            Log.d(TAG, "Unknow State $state")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(R.layout.wifi_connect_dialog)
+        setCanceledOnTouchOutside(true)
+    }
+
+    override fun show() {
+        super.show()
+
+        initView()
+        initEvent()
+        Log.d(TAG, "show")
+    }
+
+
+    private fun initEvent() {
+        isConnecting = false
+        registerReceiver()
+        setPasswordListener()
+
+        mCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                mEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            } else {
+                mEditText.inputType = InputType.TYPE_CLASS_TEXT or (InputType.TYPE_TEXT_VARIATION_PASSWORD)
+            }
+            mEditText.setSelection(mEditText.length())//set cursor to the end
+        }
+
+        bt_wifi_dialog_remove.setOnClickListener {
+            WifiControl.remove(WifiControl.isConfigured(accessPoint))
+            dismiss()
+        }
+
+        bt_wifi_dialog_cancel.setOnClickListener {
+            dismiss()
+        }
+    }
+
+    private fun initView() {
+        setCanceledOnTouchOutside(true)
+
+        tv_wifi_dialog_title.text = accessPoint.ssid
+        if (!WifiControl.isLock(accessPoint)
+                && !WifiControl.isConnected(accessPoint)
+                && WifiControl.isConfigured(accessPoint) == -1) {
+            WifiControl.connect(accessPoint)
+            connectingUI()
+        } else if (WifiControl.isConfigured(accessPoint) == -1) {
+            conUI()
+        } else if (WifiControl.isConnected(accessPoint)) {
+            conStateUI()
+        } else {
+            savedConUI()
+        }
+    }
+
+    private fun savedConUI() {
+        dialogPsd.visibility = View.GONE
+        dialogInfo.visibility = View.GONE
+        dialogCon.visibility = View.GONE
+
+        bt_wifi_dialog_remove.visibility = View.VISIBLE
+        bt_wifi_dialog_cancel.visibility = View.VISIBLE
+
+        bt_wifi_dialog_connect.textResource = R.string.connect
+        bt_wifi_dialog_connect.isEnabled = true
+        bt_wifi_dialog_connect.setOnClickListener {
+            WifiControl.connect(accessPoint)
+            connectingUI()
+        }
+    }
+
+    private fun conStateUI() {
+        dialogPsd.visibility = View.GONE
+        dialogInfo.visibility = View.VISIBLE
+        dialogCon.visibility = View.GONE
+
+        tvStrength.text = when (accessPoint.signalStrength) {
+            in 0..30 -> "弱"
+            in 30..70 -> "中"
+            else -> "强"
+        }
+
+        tvSecurity.text = when (WifiControl.getSecurity(accessPoint)) {
+            WifiControl.SECURITY_PSK -> {
+                when (WifiControl.getPskType(accessPoint)) {
+                    WifiControl.PskType.WPA_WPA2 -> "WPA/WPA2 PSK"
+                    WifiControl.PskType.WPA2 -> "WPA2 PSK"
+                    WifiControl.PskType.WPA -> "WPA PSK"
+                    else -> "UNKNOWN PSK"
+                }
+            }
+            WifiControl.SECURITY_WEP -> "WEP"
+            WifiControl.SECURITY_EAP -> "EAP"
+            else -> "UNKNOWN SECURITY"
+        }
+
+        if (WifiControl.isConnected(accessPoint)) {
+            wifiInfo = WifiControl.getConnectionInfo()
+            tvSpeed.text = "${wifiInfo?.linkSpeed}Mbps"
+            tvAddress.text = WifiControl.intToIp(wifiInfo?.ipAddress ?: 0)
+        }
+
+        bt_wifi_dialog_cancel.visibility = View.GONE
+        bt_wifi_dialog_remove.visibility = View.VISIBLE
+
+        bt_wifi_dialog_connect.isEnabled = true
+        bt_wifi_dialog_connect.textResource = R.string.finish
+        bt_wifi_dialog_connect.setOnClickListener {
+            dismiss()
+        }
+    }
+
+    private fun conUI() {
+        dialogPsd.visibility = View.VISIBLE
+        dialogInfo.visibility = View.GONE
+        dialogCon.visibility = View.GONE
+
+        bt_wifi_dialog_remove.visibility = View.GONE
+        bt_wifi_dialog_cancel.visibility = View.VISIBLE
+
+        mEditText.setText("")
+
+        bt_wifi_dialog_connect.isEnabled = false
+        bt_wifi_dialog_connect.textResource = R.string.connect
+        bt_wifi_dialog_connect.setOnClickListener {
+            accessPoint.password = mEditText.text.toString()
+            WifiControl.connect(accessPoint)
+            connectingUI()
+        }
+    }
+
+    private fun connectingUI() {
+        setCanceledOnTouchOutside(false)
+        hideKeyboard(mEditText)
+        isConnecting = true
+
+        dialogPsd.visibility = View.GONE
+        dialogInfo.visibility = View.GONE
+        dialogCon.visibility = View.VISIBLE
+
+        ivConnecting.visibility = View.VISIBLE
+        ivConnecting.startAnimation(getLoadingAnimation())
+
+        tvState.textSize = 24f
+        tvState.textResource = R.string.on_connect
+
+        bt_wifi_dialog_remove.visibility = View.GONE
+        bt_wifi_dialog_cancel.visibility = View.VISIBLE
+        bt_wifi_dialog_connect.isEnabled = false
+        bt_wifi_dialog_connect.textResource = R.string.connect
+
+        handler.postDelayed({
+            tvState.textSize = 30f
+            tvState.textResource = R.string.connect_timeout
+            conFailUI()
+        }, 20000)
+    }
+
+    private fun conFailUI() {
+        WifiControl.remove(WifiControl.isConfigured(accessPoint))
+        setCanceledOnTouchOutside(true)
+        dialogPsd.visibility = View.GONE
+        dialogInfo.visibility = View.GONE
+        dialogCon.visibility = View.VISIBLE
+
+        ivConnecting.visibility = View.GONE
+        ivConnecting.clearAnimation()
+        bt_wifi_dialog_connect.isEnabled = true
+        bt_wifi_dialog_connect.textResource = R.string.finish
+        bt_wifi_dialog_connect.setOnClickListener {
+            dismiss()
+        }
+        handler.postDelayed({ dismiss() }, 3000)
+    }
+
+    override fun dismiss() {
+        Log.d(TAG, "dismiss")
+        WifiControl.startScan()
+        handler.removeCallbacksAndMessages(null)
+        unRegisterReceiver()
+        ivConnecting.clearAnimation()
+        adapter.notifyDataSetChanged()
+        super.dismiss()
+    }
+
+    private fun setPasswordListener() {
+        val lengthLimit = if (accessPoint.encryptionType.toLowerCase().contains("wpa")) 8 else 5
+        mEditText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                if (null != s && s.toString().length >= lengthLimit) {
+                    with(bt_wifi_dialog_connect) {
+                        isEnabled = true
+                    }
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (null == s || s.toString().length < lengthLimit) {
+                    with(bt_wifi_dialog_connect) {
+                        isEnabled = false
+                    }
+                }
+            }
+        })
+    }
+
+    private fun getLoadingAnimation(): Animation {
+        val loadingAnim = AnimationUtils.loadAnimation(context, R.anim.am_wifi_laoding)
+        loadingAnim.interpolator = LinearInterpolator()
+        return loadingAnim
+    }
+
+    private fun registerReceiver() {
+        val filter = IntentFilter()
+        filter.addAction(WifiManager.SUPPLICANT_STATE_CHANGED_ACTION)
+        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
+        context.registerReceiver(connectStateReceiver, filter)
+    }
+
+    private fun unRegisterReceiver() {
+        try {
+            context.unregisterReceiver(connectStateReceiver)
+        } catch (e: IllegalArgumentException) {
+            Log.w(TAG, "The broadcast has been canceled")
+        }
+    }
+
+    //隐藏虚拟键盘
+    fun hideKeyboard(v: View) {
+        val imm = v.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (imm.isActive) {
+            imm.hideSoftInputFromWindow(v.applicationWindowToken, 0)
+        }
+    }
+
+}

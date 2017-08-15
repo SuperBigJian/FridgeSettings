@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="100px"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingBottom="20px"
+    android:paddingEnd="40px"
+    android:paddingTop="20px">
+
+    <ImageView
+        android:id="@+id/iv_wifiConnected"
+        android:layout_width="30px"
+        android:layout_height="20px"
+        android:layout_marginStart="10px"
+        android:layout_marginTop="10px"
+        android:src="@mipmap/ic_wifi_connected" />
+
+    <TextView
+        android:id="@+id/ssid"
+        android:layout_width="0px"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20px"
+        android:layout_weight="1"
+        android:textColor="#676B6C"
+        android:textSize="24px" />
+
+    <TextView
+        android:id="@+id/state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="5dp"
+        android:textColor="#9B9B9B"
+        android:textSize="30px" />
+
+    <FrameLayout
+        android:layout_width="40px"
+        android:layout_height="26px">
+
+        <ImageView
+            android:id="@+id/iv_wifiStrength"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@mipmap/wifi_state_good" />
+
+        <ImageView
+            android:id="@+id/iv_wifiLock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:src="@mipmap/wifi_lock" />
+    </FrameLayout>
+
+</LinearLayout>
+

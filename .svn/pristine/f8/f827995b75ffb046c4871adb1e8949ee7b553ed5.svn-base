@@ -1,0 +1,15 @@
+package com.midea.fridgesettings
+
+import android.app.Activity
+import android.os.Bundle
+
+/**
+ * WIFI密码输入Activity
+ * Created by chenxiaofei on 2016/04/07.
+ */
+class WifiConnectActivity : Activity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.wifi_connect_layout)
+    }
+}

@@ -1,0 +1,41 @@
+package com.midea.fridgesettings
+
+import com.midea.fridge.utils.config.FridgeConfigUtil
+import kotlinx.android.synthetic.main.fragment_update.*
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class UpdateFragment(type: FragmentTag) : BaseFragment(type) {
+
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_update
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        initView()
+        initData()
+    }
+
+    private fun initView() {
+        device.text = FridgeConfigUtil.getInstance().fullName
+        version.text = android.os.Build.DISPLAY
+    }
+
+    private fun initData() {
+
+
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+    }
+}

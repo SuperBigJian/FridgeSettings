@@ -1,0 +1,150 @@
+package com.midea.fridgesettings
+
+import android.app.Fragment
+import android.content.Context
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+abstract class BaseFragment(val type: FragmentTag) : Fragment() {
+    private val TAG = "BaseFragment"
+    private val STATE_SAVE_IS_HIDDEN = "STATE_SAVE_IS_HIDDEN"
+    private var isFirstVisible: Boolean = true
+    private var isPrepared: Boolean = false
+
+    override fun getContext(): Context {
+        return activity.applicationContext
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            var isSupportHidden = savedInstanceState.getBoolean(STATE_SAVE_IS_HIDDEN);
+            var ft = fragmentManager.beginTransaction()
+            if (isSupportHidden) {
+                ft.hide(this)
+            } else {
+                ft.show(this)
+            }
+            ft.commit()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        outState?.putBoolean(STATE_SAVE_IS_HIDDEN, isHidden)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        if (getContentViewLayoutId() != 0) {
+            return inflater!!.inflate(getContentViewLayoutId(), null)
+        } else {
+            return super.onCreateView(inflater, container, savedInstanceState)
+        }
+    }
+
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initViewsAndEvents()
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        initPrepare()
+    }
+
+    private @Synchronized fun initPrepare() {
+        if (isPrepared) {
+            onFirstUserVisible()
+            onUserVisible()
+        } else {
+            isPrepared = true
+        }
+    }
+
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser)
+        synchronized(isVisibleToUser) {
+            if (isVisibleToUser) {
+                if (isFirstVisible) {
+                    isFirstVisible = false
+                    initPrepare()
+                } else {
+                    onUserVisible()
+                }
+            } else {
+                onUserInvisible()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        destroyViewAndThing()
+        super.onDestroy()
+    }
+
+    /**
+     * 填充布局
+     */
+    protected abstract fun getContentViewLayoutId(): Int
+
+    /**
+     * 初始化组件监听
+     */
+    protected open fun initViewsAndEvents() {
+        Log.d(TAG, "$type initViewsAndEvents")
+    }
+
+    /**
+     * 第一次可见 加载数据 / 开启动画 / 广播.....
+     */
+    protected open fun onFirstUserVisible() {
+        Log.d(TAG, "$type onFirstUserVisible")
+    }
+
+    /**
+     * 可见 开启动画 / 广播.....
+     */
+    protected open fun onUserVisible() {
+        Log.d(TAG, "$type onUserVisible")
+    }
+
+    /**
+     * 不可见 关闭动画 / 广播.....
+     */
+    protected open fun onUserInvisible() {
+        Log.d(TAG, "$type onUserInvisible")
+    }
+
+    /**
+     * Fragment销毁
+     */
+    protected open fun destroyViewAndThing() {
+        Log.d(TAG, "$type detroyViewAndThing")
+    }
+
+    fun same(other: BaseFragment?): Boolean {
+        return other?.type?.equals(this.type) ?: false
+    }
+
+    enum class FragmentTag(val type: Int, val index: Int) {
+        FRAGMENT_TAB_HEAD(1, 0),
+        FRAGMENT_TAB_WIFI(2, 1),
+        FRAGMENT_TAB_BLUETOOTH(2, 2),
+        FRAGMENT_TAB_USER(2, 3),
+        FRAGMENT_TAB_ADDRESS(2, 4),
+        FRAGMENT_TAB_PHONE(2, 5),
+        FRAGMENT_TAB_DISPLAY(2, 6),
+        FRAGMENT_TAB_SOUND(2, 7),
+        FRAGMENT_TAB_DATE(2, 8),
+        FRAGMENT_TAB_ABOUT(2, 9),
+        FRAGMENT_TAB_AGREEMENT(2, 10),
+        FRAGMENT_TAB_UPDATE(2, 11),
+    }
+}
+

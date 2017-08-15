@@ -1,0 +1,169 @@
+package com.midea.fridgesettings.view
+
+import android.app.Dialog
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
+import com.midea.fridgesettings.R
+import org.jetbrains.anko.sdk25.coroutines.onClick
+
+
+/**
+ * Created by chenjian on 17-6-21.
+ */
+class CustomDialog(context: Context, themeResId: Int) : Dialog(context, themeResId) {
+
+    interface OnClickListener {
+        fun onClick(dialog: Dialog)
+    }
+
+    class Builder(val context: Context) {
+        private var message: String? = null
+        private var cancelableOut: Boolean = true
+        private var contentView: View? = null
+        private var positiveButtonText: String? = null
+        private var negativeButtonText: String? = null
+        private var singleButtonText: String? = null
+        private var positiveButtonClickListener: OnClickListener? = null
+        private var negativeButtonClickListener: OnClickListener? = null
+        private var singleButtonClickListener: OnClickListener? = null
+
+        private val layout: View
+        private val dialog: CustomDialog = CustomDialog(context, R.style.Dialog)
+
+        init {
+            val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            layout = inflater.inflate(R.layout.dialog_layout, null)
+            dialog.addContentView(layout, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        }
+
+        fun setMessage(message: String): Builder {
+            this.message = message
+            return this
+        }
+
+        fun setMessage(res: Int): Builder {
+            this.message = context.resources.getString(res)
+            return this
+        }
+
+        fun setContentView(v: View): Builder {
+            this.contentView = v
+            return this
+        }
+
+        fun setPositiveButton(positiveButtonText: String?, listener: OnClickListener?): Builder {
+            this.positiveButtonText = positiveButtonText
+            this.positiveButtonClickListener = listener
+            return this
+        }
+
+        fun setNegativeButton(negativeButtonText: String?, listener: OnClickListener?): Builder {
+            this.negativeButtonText = negativeButtonText
+            this.negativeButtonClickListener = listener
+            return this
+        }
+
+        fun setSingleButton(singleButtonText: String?, listener: OnClickListener?): Builder {
+            this.singleButtonText = singleButtonText
+            this.singleButtonClickListener = listener
+            return this
+        }
+
+        fun setCanceledOnTouchOutside(cancelable:Boolean): Builder {
+            this.cancelableOut = cancelable
+            return this
+        }
+
+        /**
+         * 创建单按钮对话框
+         * @return
+         */
+        fun createSingleButtonDialog(): CustomDialog {
+            showSingleButton()
+            layout.findViewById(R.id.singleButton).onClick {
+                singleButtonClickListener?.onClick(dialog)
+                dialog.dismiss()
+            }
+            //如果传入的按钮文字为空，则使用默认的“返回”
+            if (singleButtonText != null) {
+                (layout.findViewById(R.id.singleButton) as Button).text = singleButtonText
+            } else {
+                (layout.findViewById(R.id.singleButton) as Button).text = "返回"
+            }
+            create()
+            return dialog
+        }
+
+        /**
+         * 创建双按钮对话框
+         * @return
+         */
+        fun createTwoButtonDialog(): CustomDialog {
+            showTwoButton()
+            layout.findViewById(R.id.positiveButton).onClick {
+                positiveButtonClickListener?.onClick(dialog)
+                dialog.dismiss()
+            }
+
+            layout.findViewById(R.id.negativeButton).onClick {
+                negativeButtonClickListener?.onClick(dialog)
+                dialog.dismiss()
+            }
+
+            //如果传入的按钮文字为空，则使用默认的“是”和“否”
+            if (positiveButtonText != null) {
+                (layout.findViewById(R.id.positiveButton) as Button).text = positiveButtonText
+            } else {
+                (layout.findViewById(R.id.positiveButton) as Button).text = "确认"
+            }
+
+            if (negativeButtonText != null) {
+                (layout.findViewById(R.id.negativeButton) as Button).text = negativeButtonText
+            } else {
+                (layout.findViewById(R.id.negativeButton) as Button).text = "取消"
+            }
+
+            create()
+            return dialog
+        }
+
+        /**
+         * 单按钮对话框和双按钮对话框的公共部分在这里设置
+         */
+        private fun create() {
+            if (message != null) {      //设置提示内容
+                (layout.findViewById(R.id.message) as TextView).text = message
+            } else if (contentView != null) {       //如果使用Builder的setContentview()方法传入了布局，则使用传入的布局
+                (layout.findViewById(R.id.content) as LinearLayout).removeAllViews()
+                (layout.findViewById(R.id.content) as LinearLayout).addView(contentView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+            }
+            dialog.setContentView(layout)
+            dialog.setCancelable(true)
+            dialog.setCanceledOnTouchOutside(cancelableOut)
+        }
+
+        /**
+         * 显示双按钮布局，隐藏单按钮
+         */
+        private fun showTwoButton() {
+            layout.findViewById(R.id.singleButton).visibility = View.GONE
+            layout.findViewById(R.id.negativeButton).visibility = View.VISIBLE
+            layout.findViewById(R.id.positiveButton).visibility = View.VISIBLE
+        }
+
+        /**
+         * 显示单按钮布局，隐藏双按钮
+         */
+        private fun showSingleButton() {
+            layout.findViewById(R.id.singleButton).visibility = View.VISIBLE
+            layout.findViewById(R.id.negativeButton).visibility = View.GONE
+            layout.findViewById(R.id.positiveButton).visibility = View.GONE
+        }
+
+    }
+}

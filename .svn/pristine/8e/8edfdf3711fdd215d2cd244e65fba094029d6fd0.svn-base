@@ -1,0 +1,101 @@
+package com.midea.fridgesettings
+
+import android.animation.ValueAnimator
+import android.app.AlertDialog
+import android.content.Intent
+import android.graphics.Color
+import android.os.SystemClock
+import kotlinx.android.synthetic.main.fragment_about.*
+import org.jetbrains.anko.imageResource
+import org.jetbrains.anko.sdk25.coroutines.onClick
+import org.jetbrains.anko.textColor
+import org.jetbrains.anko.textResource
+
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class AboutFragment(type: FragmentTag) : BaseFragment(type) {
+
+    val arrowAnim: ValueAnimator = ValueAnimator.ofFloat(0f, 180f)
+    var isRotated = false
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_about
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        with(kerLog) {
+            tvTitle.textSize = 24f
+            tvTitle.textColor = Color.rgb(103, 107, 108)
+            tvTitle.textResource = R.string.kernel_log
+            switch.setOnCheckedChangeListener { _, isChecked ->
+
+            }
+        }
+        with(sysLog) {
+            tvTitle.textSize = 24f
+            tvTitle.textColor = Color.rgb(103, 107, 108)
+            tvTitle.textResource = R.string.system_log
+            switch.setOnCheckedChangeListener { _, isChecked ->
+
+            }
+        }
+
+        arrowAnim.duration = 200
+        arrowAnim.addUpdateListener { animation ->
+            val currentValue = animation.animatedValue as Float
+            ivArrow.rotationX = if (isRotated) 180 - currentValue else currentValue
+        }
+
+        llLog.onClick {
+            expandItem.toggle()
+            isRotated = ivArrow.rotationX > 90
+            arrowAnim.start()
+        }
+
+        recovery.onClick {
+
+            val ab = AlertDialog.Builder(activity)
+            ab.setMessage("确认恢复出厂设置")
+            ab.setPositiveButton("确定") { dialog, which ->
+                activity.sendBroadcast(Intent("android.intent.action.MASTER_CLEAR"))
+                dialog.dismiss()
+            }
+            ab.setNegativeButton("取消") { dialog, which ->
+                dialog.dismiss()
+            }
+            ab.show()
+        }
+
+        reStart.onClick {
+            val intent = activity.packageManager.getLaunchIntentForPackage(activity.packageName)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+        }
+    }
+
+    val mHints = Array<Long>(5, { _ -> 0 })
+
+    private fun display() {
+        System.arraycopy(mHints, 1, mHints, 0, mHints.size - 1)
+        mHints[mHints.size - 1] = SystemClock.uptimeMillis()
+        if (SystemClock.uptimeMillis() - mHints[0] <= 1000) {
+
+        }
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+        ivArrow.imageResource = if (expandItem.isExpanded) R.mipmap.ic_arrow_up else R.mipmap.ic_arrow_down
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+    }
+}
+

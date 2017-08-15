@@ -1,0 +1,134 @@
+package com.midea.fridgesettings
+
+import android.app.Dialog
+import android.os.Bundle
+import android.os.Handler
+import android.os.Message
+import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import android.util.SparseArray
+import android.view.View
+import collections.forEach
+import com.midea.fridge.utils.update.FridgeUpdateUtil
+import com.midea.fridgesettings.BaseFragment.FragmentTag
+import com.midea.fridgesettings.model.getFragment
+import com.midea.fridgesettings.view.CustomDialog
+import com.midea.update.UpGradeListener
+import java.lang.ref.WeakReference
+
+class SettingsActivity : AppCompatActivity(), TabFragment.OnTabClickListener {
+
+    private val TAG: String = "SettingsActivity"
+    private val mFragments: SparseArray<BaseFragment> = SparseArray()
+
+    companion object {
+        private val ON_FRAGMENT_SHOWING = 100
+        private val CHECK_FOR_UPDATE = 200
+        private val REFRESH_TAB_FRAGMENT = 300
+    }
+
+    class MainHandler(val activity: SettingsActivity) : Handler() {
+
+        private val wr = WeakReference(activity)
+
+        override fun handleMessage(msg: Message) {
+            val activity = wr.get() ?: return
+            when (msg.what) {
+                ON_FRAGMENT_SHOWING -> {
+                    val tag = msg.obj as FragmentTag
+                    val fragmentNeedShow = activity.findFragmentByTag(tag)
+                    activity.mFragments.forEach { _, baseFragment ->
+                        if (!baseFragment.same(fragmentNeedShow) && !baseFragment.isHidden) {
+                            activity.fragmentManager.beginTransaction().hide(baseFragment).commit()
+                            if (baseFragment.userVisibleHint) {
+                                baseFragment.userVisibleHint = false
+                            }
+                        }
+                    }
+                    if (activity.fragmentManager.findFragmentByTag(tag.toString()) == null) {
+                        activity.fragmentManager.beginTransaction().add(R.id.fragment_container, fragmentNeedShow, tag.toString()).commit()
+                    } else {
+                        activity.fragmentManager.beginTransaction().show(fragmentNeedShow).commit()
+                    }
+                    fragmentNeedShow.userVisibleHint = true
+                }
+
+                CHECK_FOR_UPDATE -> {
+                    FridgeUpdateUtil.getInstance().checkState(object : UpGradeListener.Stub() {
+                        override fun onHaveNewRom() {
+                            activity.mHandler.sendMessage(activity.mHandler.obtainMessage(REFRESH_TAB_FRAGMENT))
+                        }
+
+                        override fun onDownloadNewRom(url: String?) {
+                        }
+
+                        override fun onNoNewRom() {
+                        }
+
+                        override fun onFailed() {
+                        }
+                    })
+                }
+
+                REFRESH_TAB_FRAGMENT -> {
+                    val tab = activity.fragmentManager.findFragmentById(R.id.tabFragment)
+                    if (tab is TabFragment) {
+                        tab.hasUpdate = true
+                    }
+                }
+            }
+        }
+    }
+
+    private val mHandler = MainHandler(this)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onCreate()")
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_settings)
+        initFragment()
+    }
+
+    private fun initFragment() {
+        val wifiFragment = findFragmentByTag(FragmentTag.FRAGMENT_TAB_WIFI)
+        fragmentManager.beginTransaction().add(R.id.fragment_container, wifiFragment, FragmentTag.FRAGMENT_TAB_WIFI.toString()).commit()
+        wifiFragment.userVisibleHint = true
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(CHECK_FOR_UPDATE), 1000)
+    }
+
+    override fun onTabClick(tag: FragmentTag) {
+        mHandler.removeMessages(ON_FRAGMENT_SHOWING)
+        mHandler.sendMessage(mHandler.obtainMessage(ON_FRAGMENT_SHOWING, tag))
+    }
+
+    private fun findFragmentByTag(tag: FragmentTag): BaseFragment {
+        var fragment: BaseFragment? = mFragments.get(tag.index)
+        if (fragment == null) {
+            fragment = getFragment(tag)
+            mFragments.put(tag.index, fragment)
+        }
+        return fragment
+    }
+
+    fun backToLauncher(view: View) {
+        val fra = fragmentManager.findFragmentByTag(FragmentTag.FRAGMENT_TAB_UPDATE.toString())
+        if (fra is UpdateFragment && fra.isUpdating) {
+            val builder = CustomDialog.Builder(this)
+            builder.setMessage(R.string.cancel_update_message)
+            builder.setPositiveButton(getString(R.string.continue_update), null)
+            builder.setNegativeButton(getString(R.string.cancel_quit), object : CustomDialog.OnClickListener {
+                override fun onClick(dialog: Dialog) {
+                    FridgeUpdateUtil.getInstance().stopUpdate()
+                    onBackPressed()
+                }
+            })
+
+            builder.createTwoButtonDialog().show()
+
+        } else {
+            onBackPressed()
+        }
+
+    }
+}
+

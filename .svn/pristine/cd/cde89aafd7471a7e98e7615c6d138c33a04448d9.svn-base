@@ -1,0 +1,171 @@
+package com.midea.fridgesettings
+
+import android.content.Context
+import android.graphics.Color
+import android.location.LocationManager
+import android.os.Handler
+import android.os.Message
+import android.os.SystemClock
+import android.provider.Settings
+import android.util.Log
+import android.view.View
+import android.widget.LinearLayout
+import kotlinx.android.synthetic.main.fragment_date.*
+import org.jetbrains.anko.textColor
+import java.text.SimpleDateFormat
+import java.util.*
+
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class DateFragment(type: FragmentTag) : BaseFragment(type) {
+
+    val locMan by lazy { context.getSystemService(Context.LOCATION_SERVICE) as LocationManager }
+
+    private val CHANGE_SYSTEM_DATE_TIME = 1001
+    private var mHandler = object : Handler() {
+        override fun handleMessage(msg: Message?) {
+            setDateTime()
+            setSelectTime()
+        }
+    }
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_date
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        sw_autoTime.switch.isChecked = getTimeSettingAuto()
+        sw_autoTime.switch.setOnCheckedChangeListener { _, isChecked ->
+            setTimeSettingAuto(isChecked)
+            if (getTimeSettingAuto()) {
+                cb_pickdate.visibility = View.GONE
+                rl_wheelPicker.visibility = View.GONE
+            } else {
+                cb_pickdate.visibility = View.VISIBLE
+                cb_pickdate.isChecked = false
+            }
+        }
+
+        cb_pickdate.visibility = if (!sw_autoTime.switch.isChecked) View.VISIBLE else View.GONE
+        cb_pickdate.isChecked = false
+        rl_wheelPicker.visibility = View.GONE
+        cb_pickdate.setOnCheckedChangeListener { _, isChecked ->
+            rl_wheelPicker.visibility = if (isChecked) View.VISIBLE else View.GONE
+        }
+
+        with(wp_date) {
+            wheelYearPicker.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT)
+            val monParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT)
+            monParams.marginStart = 60
+            wheelMonthPicker.layoutParams = monParams
+            wheelDayPicker.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT)
+            setAtmospheric(true)
+            isCyclic = true
+            itemTextColor = Color.rgb(155, 155, 155)
+            itemTextSize = 36
+            selectedItemTextColor = Color.rgb(0, 0, 0)
+            textViewYear.textSize = 36f
+            textViewYear.textColor = Color.rgb(65, 137, 162)
+            textViewDay.textSize = 36f
+            textViewDay.textColor = Color.rgb(65, 137, 162)
+            textViewMonth.textSize = 36f
+            textViewMonth.textColor = Color.rgb(65, 137, 162)
+        }
+
+        wp_hour.data = (0..23).map { String.format("%02d", it) }
+        wp_minute.data = (0..59).map { String.format("%02d", it) }
+
+        wp_date.setOnDateSelectedListener { _, date ->
+            onDateChange(date)
+        }
+
+        wp_hour.setOnItemSelectedListener { _, data, _ ->
+            onHourChange(data.toString())
+        }
+
+        wp_minute.setOnItemSelectedListener { _, data, _ ->
+            onMinuteChange(data.toString())
+        }
+
+    }
+
+    fun onDateChange(date: Date) {
+        val str = cb_pickdate.text.toString()
+        val d = SimpleDateFormat("yyyy年MM月dd日", Locale.getDefault()).format(date)
+        cb_pickdate.text = str.replaceRange(0..str.indexOf("日"), d)
+        mHandler.removeMessages(CHANGE_SYSTEM_DATE_TIME)
+        mHandler.sendEmptyMessageDelayed(CHANGE_SYSTEM_DATE_TIME, 1000)
+    }
+
+    fun onHourChange(hour: String) {
+        val str = cb_pickdate.text.toString()
+        cb_pickdate.text = str.replaceRange(str.length - 5..str.length - 4, hour)
+        mHandler.removeMessages(CHANGE_SYSTEM_DATE_TIME)
+        mHandler.sendEmptyMessageDelayed(CHANGE_SYSTEM_DATE_TIME, 1000)
+    }
+
+    fun onMinuteChange(minute: String) {
+        val str = cb_pickdate.text.toString()
+        cb_pickdate.text = str.replaceRange(str.length - 2..str.length - 1, minute)
+        mHandler.removeMessages(CHANGE_SYSTEM_DATE_TIME)
+        mHandler.sendEmptyMessageDelayed(CHANGE_SYSTEM_DATE_TIME, 1000)
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+
+        cb_pickdate.isChecked = false
+        sw_autoTime.switch.isChecked = getTimeSettingAuto()
+
+        setSelectTime()
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+    }
+
+    private fun getTimeSettingAuto(): Boolean {
+        val state = Settings.Global.getInt(context.contentResolver, Settings.Global.AUTO_TIME, 1)
+        return state == 1
+    }
+
+    private fun setTimeSettingAuto(isAuto: Boolean) {
+        Settings.Global.putInt(context.contentResolver, Settings.Global.AUTO_TIME, if (isAuto) 1 else 0)
+    }
+
+    private fun setDateTime() {
+        val c = Calendar.getInstance()
+        c.set(Calendar.YEAR, wp_date.wheelYearPicker.currentItemPosition + 1000)
+        c.set(Calendar.MONTH, wp_date.wheelMonthPicker.currentItemPosition)
+        c.set(Calendar.DAY_OF_MONTH, wp_date.wheelDayPicker.currentItemPosition + 1)
+        c.set(Calendar.HOUR_OF_DAY, wp_hour.currentItemPosition)
+        c.set(Calendar.MINUTE, wp_minute.currentItemPosition)
+
+        Log.d("Date", "${wp_date.currentYear}  ${wp_date.currentMonth - 1}  ${wp_date.currentDay} " +
+                "// ${wp_date.wheelYearPicker.currentItemPosition}" +
+                " ${wp_date.wheelMonthPicker.currentItemPosition}" +
+                " ${wp_date.wheelDayPicker.currentItemPosition}")
+        val time = c.timeInMillis
+        if (time / 1000 < Integer.MAX_VALUE) {
+            SystemClock.setCurrentTimeMillis(time)
+        }
+        val now = Calendar.getInstance().time
+        Log.d("Date", " $now")
+    }
+
+    private fun setSelectTime() {
+        val formatter = SimpleDateFormat("yyyy年MM月dd日                  HH:mm", Locale.getDefault())
+        val c = Calendar.getInstance()
+        cb_pickdate.text = formatter.format(Calendar.getInstance().time)
+        wp_date.selectedYear = c.get(Calendar.YEAR)
+        wp_date.selectedMonth = c.get(Calendar.MONTH) + 1
+        wp_date.selectedDay = c.get(Calendar.DAY_OF_MONTH)
+        wp_hour.selectedItemPosition = c.get(Calendar.HOUR_OF_DAY)
+        wp_minute.selectedItemPosition = c.get(Calendar.MINUTE)
+    }
+}

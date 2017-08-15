@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/FridgeSettings.iml" filepath="$PROJECT_DIR$/FridgeSettings.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/fridge_control_util/fridge_control_util.iml" filepath="$PROJECT_DIR$/fridge_control_util/fridge_control_util.iml" />
+    </modules>
+  </component>
+</project>

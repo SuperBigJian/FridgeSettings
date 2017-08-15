@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="网络SSID"
+        android:textColor="#636262"
+        android:textSize="24px" />
+
+    <EditText
+        android:id="@+id/ssidInput"
+        android:layout_width="match_parent"
+        android:layout_height="80px"
+        android:layout_marginEnd="10px"
+        android:layout_marginStart="10px"
+        android:paddingStart="18px"
+        android:layout_marginTop="10px"
+        android:background="@mipmap/et_wifi_input_bg"
+        android:hint="@string/please_input_ssid"
+        android:textColor="#000000"
+        android:textColorHint="#C3C3C3"
+        android:textCursorDrawable="@mipmap/et_wifi_cursor"
+        android:textSize="30px" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40px"
+        android:text="安全性"
+        android:textColor="#636262"
+        android:textSize="24px" />
+
+    <RelativeLayout
+        android:id="@+id/encryptSpinnerWrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40px"
+        android:layout_marginEnd="10px"
+        android:layout_marginStart="10px"
+        android:layout_marginTop="10px">
+
+        <Spinner
+            android:id="@+id/encryptSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="80px"
+            android:background="@mipmap/et_wifi_input_bg"
+            android:spinnerMode="dropdown"
+            android:textSize="30px" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_gravity="end"
+            android:layout_marginEnd="20px"
+            android:src="@mipmap/expand_arrow" />
+    </RelativeLayout>
+
+</LinearLayout>

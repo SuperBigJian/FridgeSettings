@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="topbar_width">1280px</dimen>
+    <dimen name="topbar_height">120px</dimen>
+    <dimen name="bottombar_width">1280px</dimen>
+    <dimen name="bottombar_height">100px</dimen>
+    <dimen name="fg_tab_width">250px</dimen>
+    <dimen name="fg_tab_height">80px</dimen>
+    <dimen name="text_title">36px</dimen>
+    <dimen name="tab_title_text">28px</dimen>
+    <dimen name="content_text">24px</dimen>
+    <dimen name="text_fg_tab_head">24px</dimen>
+    <dimen name="text_fg_tab_entry">28px</dimen>
+    <dimen name="icon_fg_tab_width">36px</dimen>
+    <dimen name="icon_fg_tab_height">36px</dimen>
+    <dimen name="fg_tb_padding_start">20px</dimen>
+    <dimen name="bt_back_txt">40px</dimen>
+    <dimen name="fg_padding_LandR">20px</dimen>
+    <dimen name="fg_padding_top">40px</dimen>
+</resources>

@@ -1,0 +1,160 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "25.0.0"
+    defaultConfig {
+        applicationId "com.midea.fridgesettings"
+        multiDexEnabled true
+        minSdkVersion 22
+        targetSdkVersion 23
+        versionCode 2
+        versionName "2.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('../signing/Intel/MSmartAndroidKey')
+            storePassword '123456'
+            keyAlias 'MSmartAndroidKey'
+            keyPassword '123456'
+        }
+        debug {
+            //storeFile file('../signing/Intel/MSmartAndroidKey')
+            storeFile file('../signing/demhel/MSmartAndroidKey')
+            //storeFile file('../signing/lcfc/MSmartAndroidKey')
+            storePassword '123456'
+            keyAlias 'MSmartAndroidKey'
+            keyPassword '123456'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            buildConfigField 'boolean', 'LOG_FLAG', 'false'//程序中的LOG开关
+            buildConfigField 'boolean', 'ONLINE_FLAG', 'true'//程序中的接口环境标识
+            applicationVariants.all { variant ->
+                renameAPK(variant)
+            }
+        }
+        debug {
+            signingConfig signingConfigs.debug
+            buildConfigField 'boolean', 'LOG_FLAG', 'true'//程序中的LOG开关
+            buildConfigField 'boolean', 'ONLINE_FLAG', 'false'//程序中的接口环境标识
+        }
+    }
+    flavorDimensions "manufacturer", "model" //区分厂商和型号两个维度
+    productFlavors {
+        hlt {
+            dimension "manufacturer"
+        }
+        lb {
+            dimension "manufacturer"
+        }
+        wld {
+            dimension "manufacturer"
+        }
+        "615" {
+            dimension "model"
+            buildConfigField 'String', 'CONFIG', '"ConfigOfA1111"'
+        }
+        "649" {
+            dimension "model"
+            buildConfigField 'String', 'CONFIG', '"ConfigOfA0379"'
+        }
+        "650" {
+            dimension "model"
+            buildConfigField 'String', 'CONFIG', '"ConfigOfA0347"'
+        }
+        "543" {
+            dimension "model"
+            buildConfigField 'String', 'CONFIG', '"ConfigOfA0443"'
+        }
+        "720" {
+            dimension "model"
+            buildConfigField 'String', 'CONFIG', '"ConfigOfA0359"'
+        }
+    }
+
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        // 先忽略全部build任务
+        for (int i = 0; i < names.size(); i++) {
+            setIgnore(true)
+        }
+        // 使用白名单
+        if (names.contains("hlt") && (names.contains("615") || names.contains("543"))) {
+            // Gradle ignores any variants that satisfy the conditions above.
+            setIgnore(false)
+        }
+        if (names.contains("lb") && (names.contains("649") || names.contains("720"))) {
+            // Gradle ignores any variants that satisfy the conditions above.
+            setIgnore(false)
+        }
+        if (names.contains("wld") && names.contains("650")) {
+            // Gradle ignores any variants that satisfy the conditions above.
+            setIgnore(false)
+        }
+    }
+
+    lintOptions {
+        // set to true to turn off analysis progress reporting by lint
+        quiet true
+        // if true, stop the gradle build if errors are found
+        abortOnError false
+        // if true, only report errors
+        ignoreWarnings true
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+}
+
+// 对APK重命名，命名规则 应用名_版本号_打包时间_厂商_冰箱设计代码_打包类型
+def renameAPK(variant) {
+    variant.outputs.each { output ->
+        def packageName = "FridgeSettings" //variant.applicationId
+        def formattedDate = new Date().format('yyyyMMdd')
+
+        def manufacturer = variant.productFlavors[0].name
+        def fridgeCode = variant.productFlavors[1].name
+        def buildType = variant.variantData.variantConfiguration.buildType.name
+        def file = output.packageApplication.outputFile
+        def version = variant.versionName
+        def versioncode = variant.versionCode
+
+        def fileName = packageName + "_V" + version + "." + versioncode + "_" + formattedDate + "_" + manufacturer + "_" + fridgeCode + "_" + buildType + ".apk"
+        output.packageApplication.outputFile = new File(file.parent, fileName)
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile project(':fridge_control_util')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.android.support:recyclerview-v7:22.2.0'
+    compile 'org.jetbrains.anko:anko:0.10.1'
+    compile 'cn.aigestudio.wheelpicker:WheelPicker:1.1.2'
+    compile 'com.github.aakira:expandable-layout:1.6.0@aar'
+    compile 'de.hdodenhof:circleimageview:2.1.0'
+    testCompile 'junit:junit:4.12'
+    compile 'eu.the4thfloor.volley:com.android.volley:2015.05.28'
+    compile ('com.alibaba.android:vlayout:1.0.9@aar') {
+        transitive = true
+    }
+}
+repositories {
+    mavenCentral()
+}

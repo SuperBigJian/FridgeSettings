@@ -1,0 +1,56 @@
+package com.midea.fridgesettings
+
+import android.graphics.Color
+import android.view.animation.LinearInterpolator
+import kotlinx.android.synthetic.main.fragment_radio.*
+import org.jetbrains.anko.textColor
+import org.jetbrains.anko.textResource
+
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class RadioFragment(type: FragmentTag = BaseFragment.FragmentTag.FRAGMENT_TAB_RADIO) : BaseFragment(type) {
+
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_radio
+
+    override fun initViewsAndEvents() {
+        with(radioOpen) {
+            tvTitle.textSize = 30f
+            tvTitle.textColor = Color.rgb(103, 107, 108)
+            tvTitle.textResource = R.string.open_radio
+            switch.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    exLayout.expand(5000,LinearInterpolator())
+                } else {
+                    exLayout.collapse(5000,LinearInterpolator())
+                }
+            }
+            switch.isChecked = false
+        }
+
+        with(weatherOpen) {
+            tvTitle.textSize = 30f
+            tvTitle.textColor = Color.rgb(103, 107, 108)
+            tvTitle.textResource = R.string.open_weather
+            switch.setOnCheckedChangeListener { _, isChecked ->
+
+            }
+            switch.isChecked = true
+        }
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+
+    }
+}

@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">设置</string>
+    <string name="bt_back">首页</string>
+    <string name="connected">已连接</string>
+    <string name="connect_saved">已保存</string>
+    <string name="connect_failed">连接失败</string>
+    <string name="on_connect">正在连接...</string>
+    <string name="choose_network">选择网络...</string>
+    <string name="refresh">刷新</string>
+    <string name="please_refresh_wifi">无可连接的Wi-Fi网络，请刷新重试。</string>
+    <string name="scanning_again">正在重新扫描…</string>
+    <string name="password">密码</string>
+    <string name="show_password">显示密码</string>
+    <string name="cancel">取消</string>
+    <string name="connect">连接</string>
+    <string name="please_input_password">请输入密码</string>
+    <string name="remove_password">取消保存</string>
+    <string name="finish">完成</string>
+    <string name="wifi_state">状态信息</string>
+    <string name="wifi_strength">信号强度</string>
+    <string name="wifi_speed">连接速度</string>
+    <string name="ip_adress">IP地址</string>
+    <string name="security">安全性</string>
+    <string name="bluetoothTurningOn">蓝牙正在打开...</string>
+    <string name="bluetoothTurningOff">蓝牙正在关闭...</string>
+    <string name="bluetoothDeviceName">设备名称： </string>
+    <string name="bluetoothOff">蓝牙已关闭.</string>
+</resources>

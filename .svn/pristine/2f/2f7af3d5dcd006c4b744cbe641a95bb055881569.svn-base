@@ -1,0 +1,320 @@
+package com.midea.fridgesettings
+
+import android.app.KeyguardManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.PowerManager
+import android.util.Log
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
+import com.midea.fridge.utils.config.FridgeConfigUtil
+import com.midea.fridge.utils.update.FridgeUpdateUtil
+import com.midea.fridgesettings.utils.LogUtils
+import com.midea.fridgesettings.wifi.WifiControl
+import kotlinx.android.synthetic.main.fragment_update.*
+import org.jetbrains.anko.imageResource
+import org.jetbrains.anko.runOnUiThread
+import org.jetbrains.anko.textResource
+import java.util.*
+
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class UpdateFragment(type: FragmentTag = BaseFragment.FragmentTag.FRAGMENT_TAB_UPDATE) : BaseFragment(type) {
+    private val TAG = "UpdateFragment"
+
+    private val UPDATE_READY = 1010
+    private val UPDATE_NOT_READY = 1020
+    private val NO_UPDATE = 1030
+    private val UPDATE_ERROR = 1040
+
+    private val DOWNLOAD_START = 2010
+    private val DOWNLOAD_FINISH = 2020
+    private val DOWNLOAD_ERROR = 2030
+    private val DOWNLOAD_STOP = 2040
+
+
+    private val update = FridgeUpdateUtil.getInstance()
+    private var downTimer: Timer? = null
+    private var curState: Int = 0
+
+    var isUpdating = false
+
+    private var receiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context, intent: Intent) {
+            tv_curState.visibility = View.VISIBLE
+            iv_check.visibility = View.INVISIBLE
+            iv_check.clearAnimation()
+            btUpdate.isEnabled = true
+            when (intent.action) {
+                FridgeUpdateUtil.UPDATE_ACTION_CHECK_DOWNLOADED -> {
+                    val data = intent.getStringExtra(FridgeUpdateUtil.UPDATE_ACTION_CHECK_DOWNLOADED_EXTRA)
+                    Log.d(TAG, "sstang ----> downloaded $data")
+                    refreshUpdateUI(UPDATE_READY)
+                }
+
+                FridgeUpdateUtil.UPDATE_ACTION_CHECK_HAVE_NEW -> {
+                    Log.d(TAG, "sstang ----> havenewversion")
+                    refreshUpdateUI(UPDATE_NOT_READY)
+                }
+
+                FridgeUpdateUtil.UPDATE_ACTION_CHECK_NEWEST -> {
+                    Log.d(TAG, "sstang ----> nonewversion ")
+                    refreshUpdateUI(NO_UPDATE)
+                }
+
+                FridgeUpdateUtil.UPDATE_ACTION_CHECK_FAILED -> {
+                    val data = intent.getStringExtra(FridgeUpdateUtil.UPDATE_ACTION_CHECK_FAILED_EXTRA)
+                    Log.d(TAG, "sstang ----> failed $data")
+                    refreshUpdateUI(UPDATE_ERROR)
+                }
+
+                FridgeUpdateUtil.UPDATE_ACTION_DOWNLOAD_START -> {
+                    val fileSize = intent.getIntExtra(FridgeUpdateUtil.UPDATE_ACTION_DOWNLOAD_START_EXTRA)
+                    Log.d(TAG, "sstang ----> onStart $fileSize")
+                    refreshDownLoadUI(DOWNLOAD_START)
+                }
+
+                FridgeUpdateUtil.UPDATE_ACTION_DOWNLOAD_FINISH -> {
+                    Log.d(TAG, "sstang ----> onFinish ")
+                    refreshDownLoadUI(DOWNLOAD_FINISH)
+                }
+
+                FridgeUpdateUtil.UPDATE_ACTION_DOWNLOAD_ERROR -> {
+                    Log.d(TAG, "sstang ----> onError ")
+                    refreshDownLoadUI(DOWNLOAD_ERROR)
+                }
+
+                FridgeUpdateUtil.UPDATE_ACTION_DOWNLOAD_STOP -> {
+                    Log.d(TAG, "sstang ----> onStop ")
+                    refreshDownLoadUI(DOWNLOAD_STOP)
+                }
+
+            }
+
+        }
+    }
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_update
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        initView()
+        checkForUpdate()
+    }
+
+    private fun initView() {
+        pic_fridge.imageResource = BuildConfig.FRIDGE_PIC
+        device.text = FridgeConfigUtil.getInstance().fullName
+        version.text = android.os.Build.DISPLAY
+        progress.max = 100
+        btUpdate.setOnClickListener { updateBTAction() }
+    }
+
+    fun checkForUpdate() {
+        tv_curState.visibility = View.VISIBLE
+        progress.visibility = View.INVISIBLE
+        if (WifiControl.getConnectionInfo() == null) {
+            tv_curState.textResource = R.string.no_net
+            btUpdate.isEnabled = true
+            btUpdate.textResource = R.string.check_update
+        } else {
+            tv_curState.textResource = R.string.checking
+            iv_check.visibility = View.VISIBLE
+            iv_check.animation = getLoadingAnimation()
+            btUpdate.isEnabled = false
+            update.checkState()
+        }
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+        registerReceiver()
+        if (isUpdating){
+            startTimer()
+        }
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+        unRegisterReceiver()
+        stopTimer()
+    }
+
+    private fun startTimer() {
+        downTimer = Timer()
+        downTimer?.schedule(object : java.util.TimerTask() {
+
+            override fun run() {
+                runOnUiThread {
+                    progress.progress = update.progress
+                }
+            }
+        }, 10000, 5000)
+    }
+
+    private fun stopTimer() {
+        if (downTimer != null) {
+            downTimer?.cancel()
+        }
+    }
+
+    private fun getLoadingAnimation(): Animation {
+        val loadingAnim = AnimationUtils.loadAnimation(context, R.anim.am_wifi_laoding)
+        loadingAnim.interpolator = LinearInterpolator()
+        return loadingAnim
+    }
+
+    private fun refreshUpdateUI(state: Int) {
+        Log.d(TAG, "refreshUpdateUI $state ")
+        curState = state
+        when (state) {
+            UPDATE_READY -> {
+                tv_curState.textResource = R.string.you_can_update_now
+                btUpdate.textResource = R.string.update
+                val tab = fragmentManager.findFragmentById(R.id.tabFragment)
+                if (tab is TabFragment) {
+                    tab.hasUpdate = true
+                }
+            }
+
+            UPDATE_NOT_READY -> {
+                tv_curState.textResource = R.string.has_update_need_download
+                btUpdate.textResource = R.string.download
+            }
+
+            NO_UPDATE, UPDATE_ERROR -> {
+                tv_curState.textResource = R.string.no_update
+                btUpdate.textResource = R.string.check_update
+            }
+        }
+
+    }
+
+    private fun refreshDownLoadUI(state: Int) {
+        Log.d(TAG, "refreshDownLoadUI $state ")
+        curState = state
+        when (state) {
+            DOWNLOAD_START -> {
+                tv_curState.textResource = R.string.downloading
+                progress.visibility = View.VISIBLE
+                progress.progress = 0
+                btUpdate.textResource = R.string.cancelDownload
+
+                isUpdating = true
+                wakeUpAndUnlock()
+                startTimer()
+            }
+
+            DOWNLOAD_ERROR, DOWNLOAD_STOP -> {
+                progress.visibility = View.INVISIBLE
+                if (WifiControl.getConnectionInfo() == null) {
+                    tv_curState.textResource = R.string.no_net
+                    btUpdate.textResource = R.string.check_update
+                } else {
+                    btUpdate.textResource = R.string.reDownload
+                    tv_curState.textResource = R.string.download_fail
+                }
+
+                isUpdating = false
+                stopWakeUp()
+                stopTimer()
+            }
+
+            DOWNLOAD_FINISH -> {
+                progress.visibility = View.INVISIBLE
+
+                isUpdating = false
+                stopWakeUp()
+                stopTimer()
+                refreshUpdateUI(UPDATE_READY)
+            }
+        }
+    }
+
+    private fun updateBTAction() {
+        Log.d(TAG, "updateBTAction $curState")
+        when (curState) {
+            UPDATE_READY,DOWNLOAD_FINISH -> {
+                update.startUpdate()
+            }
+
+            UPDATE_NOT_READY, DOWNLOAD_ERROR, DOWNLOAD_STOP -> {
+                iv_check.visibility = View.VISIBLE
+                iv_check.animation = getLoadingAnimation()
+                update.download()
+                btUpdate.isEnabled = false
+            }
+
+            DOWNLOAD_START -> {
+                update.stopUpdate()
+                refreshDownLoadUI(DOWNLOAD_ERROR)
+            }
+
+            else -> {
+                checkForUpdate()
+            }
+        }
+    }
+
+    override fun destroyViewAndThing() {
+        update.stopUpdate()
+        unRegisterReceiver()
+        super.destroyViewAndThing()
+    }
+
+    private fun registerReceiver() {
+        val filter = IntentFilter()
+        filter.addAction(FridgeUpdateUtil.UPDATE_ACTION_CHECK_DOWNLOADED)
+        filter.addAction(FridgeUpdateUtil.UPDATE_ACTION_CHECK_HAVE_NEW)
+        filter.addAction(FridgeUpdateUtil.UPDATE_ACTION_CHECK_NEWEST)
+        filter.addAction(FridgeUpdateUtil.UPDATE_ACTION_CHECK_FAILED)
+        filter.addAction(FridgeUpdateUtil.UPDATE_ACTION_DOWNLOAD_FINISH)
+        filter.addAction(FridgeUpdateUtil.UPDATE_ACTION_DOWNLOAD_ERROR)
+        filter.addAction(FridgeUpdateUtil.UPDATE_ACTION_DOWNLOAD_STOP)
+        filter.addAction(FridgeUpdateUtil.UPDATE_ACTION_DOWNLOAD_START)
+        context.registerReceiver(receiver, filter)
+    }
+
+    private fun unRegisterReceiver() {
+        try {
+            context.unregisterReceiver(receiver)
+        } catch (e: IllegalArgumentException) {
+            Log.w("WIFIX", "The broadcast has been canceled")
+        }
+    }
+
+    private val km by lazy { activity.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager }
+    private val pm by lazy { activity.getSystemService(Context.POWER_SERVICE) as PowerManager }
+    //获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
+    private val mWl: PowerManager.WakeLock by lazy { pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "bright") }
+
+    /**
+     * 点亮屏幕，并且常亮
+     */
+    private fun wakeUpAndUnlock() {
+        LogUtils.Logi(TAG, "wakeUpAndUnlock")
+        val kl = km.newKeyguardLock("unLock")
+        //解锁
+        kl.disableKeyguard()
+        mWl.setReferenceCounted(false)
+        mWl.acquire()
+    }
+
+    /**
+     * 取消常亮
+     */
+    private fun stopWakeUp() {
+        LogUtils.Logi(TAG, "stopWakeUp")
+        if (mWl.isHeld) {
+            LogUtils.Logi(TAG, "stopWakeUp, release")
+            mWl.release()
+        }
+    }
+}

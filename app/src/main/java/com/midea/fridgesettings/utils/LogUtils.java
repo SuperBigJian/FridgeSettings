@@ -1,0 +1,303 @@
+package com.midea.fridgesettings.utils;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
+
+import com.midea.fridgesettings.BuildConfig;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class LogUtils {
+    public static boolean DEBUG = BuildConfig.LOG_FLAG;
+    private static LogUtils INSTANCE = null;
+    private String mAppLogFilePath; //APP日志存放文件夹
+    private String mKernelLogFilePath;//内核日志存放文件夹
+    private LogDumper mLogDumper = null;
+    private KernelLogDumper mKernelLogDumper = null;
+    private final long LOGMAXSIZE = 10 * 1024 * 1024;//单个日志文件的大小默认为10M
+
+    public static LogUtils getInstance(Context context) {
+        if (INSTANCE == null) {
+            INSTANCE = new LogUtils(context);
+        }
+        return INSTANCE;
+    }
+
+    private LogUtils(Context context) {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {// 优先保存到SD卡中
+            mAppLogFilePath = Environment.getExternalStorageDirectory() + File.separator + "MideaAppLog";
+            mKernelLogFilePath = Environment.getExternalStorageDirectory() + File.separator + "MideaKernelLog";
+        } else {// 如果SD卡不存在，就保存到本应用的目录下
+            mAppLogFilePath = context.getFilesDir().getAbsolutePath() + File.separator + "MideaAppLog";
+            mKernelLogFilePath = context.getFilesDir().getAbsolutePath() + File.separator + "MideaKernelLog";
+        }
+        File appfile = new File(mAppLogFilePath);
+        if (!appfile.exists()) {
+            appfile.mkdirs();
+        }
+        File kernelfile = new File(mKernelLogFilePath);
+        if (!kernelfile.exists()) {
+            kernelfile.mkdirs();
+        }
+    }
+
+
+    /**
+     * 创建文件，记录app日志
+     */
+    public void startAppLog() {
+        if (mLogDumper == null) {
+            mLogDumper = new LogDumper(mAppLogFilePath);
+        }
+        try {
+            mLogDumper.start();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public void stopAppLog() {
+        if (mLogDumper != null) {
+            mLogDumper.stopLogs();
+            mLogDumper = null;
+        }
+    }
+
+    public boolean isAppLogRunning() {
+        if (mLogDumper != null) {
+            return mLogDumper.isAlive();
+        }
+        return false;
+    }
+
+
+    private class LogDumper extends Thread {
+
+        private Process logcatProc;
+        private BufferedReader mReader = null;
+        private boolean mRunning = true;
+        private File logfile;
+        private FileOutputStream out = null;
+
+        public LogDumper(String dir) {
+            try {
+                logfile = new File(dir, "appLog" + Utils.getLogFileTime() + ".txt");
+                out = new FileOutputStream(logfile);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void stopLogs() {
+            mRunning = false;
+        }
+
+        @SuppressLint("SimpleDateFormat")
+        @Override
+        public void run() {
+            try {
+                logcatProc = Runtime.getRuntime().exec("logcat");
+                mReader = new BufferedReader(new InputStreamReader(logcatProc.getInputStream()), 1024);
+                String line;
+                while (mRunning && (line = mReader.readLine()) != null) {
+                    if (logfile.length() > LOGMAXSIZE) {
+                        //如果日志文件大小超过最大值，则退出循环
+                        break;
+                    }
+                    if (!mRunning) {
+                        break;
+                    }
+                    if (line.length() == 0) {
+                        continue;
+                    }
+                    if (out != null) {
+                        out.write((Utils.getLogTime() + "  " + line + "\n").getBytes());
+                    }
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (logcatProc != null) {
+                    logcatProc.destroy();
+                    logcatProc = null;
+                }
+                if (mReader != null) {
+                    try {
+                        mReader.close();
+                        mReader = null;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    out = null;
+                }
+
+                if (logfile.length() > LOGMAXSIZE) {
+                    mLogDumper = new LogDumper(mAppLogFilePath);
+                    mLogDumper.start();
+                }
+            }
+        }
+    }
+
+    public void startKernelLog() {
+        if (mKernelLogDumper == null) {
+            mKernelLogDumper = new KernelLogDumper(mKernelLogFilePath);
+        }
+        try {
+            mKernelLogDumper.start();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void stopKernelLog() {
+        if (mKernelLogDumper != null) {
+            mKernelLogDumper.stopLogs();
+            mKernelLogDumper = null;
+        }
+    }
+
+
+    public boolean isKernelLogRunning() {
+        if (mKernelLogDumper != null) {
+            return mKernelLogDumper.isAlive();
+        }
+        return false;
+    }
+
+    private class KernelLogDumper extends Thread {
+
+        private Process logcatProc;
+        private BufferedReader mReader = null;
+        private boolean mRunning = true;
+        private File logfile;
+        private FileOutputStream out = null;
+
+        public KernelLogDumper(String dir) {
+            try {
+                logfile = new File(dir, "kernelLog" + Utils.getLogFileTime() + ".txt");
+                out = new FileOutputStream(logfile);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        public void stopLogs() {
+            mRunning = false;
+        }
+
+        @Override
+        public void run() {
+            try {
+                logcatProc = Runtime.getRuntime().exec("su");
+                DataOutputStream os = new DataOutputStream(logcatProc.getOutputStream());
+                os.writeBytes("cat /proc/kmsg\n");
+                os.flush();
+                mReader = new BufferedReader(new InputStreamReader(logcatProc.getInputStream()), 1024);
+                String line;
+                while (mRunning && (line = mReader.readLine()) != null) {
+                    if (logfile.length() > LOGMAXSIZE) {
+                        break;
+                    }
+                    if (!mRunning) {
+                        break;
+                    }
+                    if (line.length() == 0) {
+                        continue;
+                    }
+                    if (out != null) {
+                        out.write((Utils.getLogTime() + "  " + line + "\n").getBytes());
+                    }
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (logcatProc != null) {
+                    logcatProc.destroy();
+                    logcatProc = null;
+                }
+                if (mReader != null) {
+                    try {
+                        mReader.close();
+                        mReader = null;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    out = null;
+                }
+
+                if (logfile.length() > LOGMAXSIZE) {
+                    mLogDumper = new LogDumper(mKernelLogFilePath);
+                    mLogDumper.start();
+                }
+            }
+        }
+    }
+
+
+    public static void setDebug(boolean state) {
+        DEBUG = state;
+    }
+
+    public static void Logv(String tag, String content) {
+        if (DEBUG) {
+            Log.v(tag, content);
+        }
+    }
+
+    public static void Logi(String tag, String content) {
+        if (DEBUG) {
+            Log.i(tag, content);
+        }
+    }
+
+    public static void Logd(String tag, String content) {
+        if (DEBUG) {
+            Log.d(tag, content);
+        }
+    }
+
+    public static void Logw(String tag, String content) {
+        if (DEBUG) {
+            Log.w(tag, content);
+        }
+    }
+
+    public static void Loge(String tag, String content) {
+        if (DEBUG) {
+            Log.e(tag, content);
+        }
+    }
+
+    public static void Loge(String tag, String content, Exception e) {
+        if (DEBUG) {
+            Log.e(tag, content, e);
+        }
+    }
+}

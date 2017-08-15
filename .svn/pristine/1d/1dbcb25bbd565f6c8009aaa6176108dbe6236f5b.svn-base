@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="640px"
+    android:layout_height="300px"
+    android:background="#7f7f7f7f">
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="640px"
+        android:layout_height="300px"
+        android:layout_centerInParent="true"
+        android:background="#ffffff">
+
+        <com.midea.fridge.pad.widget.FontTextView
+            android:id="@+id/title"
+            android:layout_width="fill_parent"
+            android:layout_height="68px"
+            android:background="#4DB4C9"
+            android:gravity="center_vertical"
+            android:paddingLeft="36px"
+            android:text="下载中请等待"
+            android:textColor="#FFFFFF"
+            android:textSize="32px"
+            app:font="fonts/yahei.ttc" />
+
+
+        <ProgressBar
+            android:id="@+id/my_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="580px"
+            android:layout_height="10px"
+            android:max="100"
+            android:layout_below="@+id/title"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="64px"
+            android:progressDrawable="@drawable/progressbar_color" />
+
+
+        <com.midea.fridge.pad.widget.FontTextView
+            android:id="@+id/percent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/my_progress"
+            android:layout_marginLeft="36px"
+            android:layout_marginTop="16px"
+            android:text="0%"
+            android:textColor="#565656"
+            android:textSize="24px"
+            app:font="fonts/yahei.ttc" />
+
+        <com.midea.fridge.pad.widget.FontTextView
+            android:id="@+id/kb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/my_progress"
+            android:layout_marginRight="30px"
+            android:layout_marginTop="16px"
+            android:textColor="#565656"
+            android:textSize="24px"
+            app:font="fonts/yahei.ttc" />
+
+
+        <Button
+            android:id="@+id/submit"
+            android:layout_width="252px"
+            android:layout_height="50px"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="12px"
+            android:background="@drawable/button_quxiao" />
+
+
+    </RelativeLayout>
+
+</RelativeLayout>

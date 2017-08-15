@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F8F8"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/fg_padding_LandR"
+    android:paddingLeft="@dimen/fg_padding_LandR"
+    android:paddingRight="@dimen/fg_padding_LandR"
+    android:paddingTop="@dimen/fg_padding_top">
+
+    <include layout="@layout/wifi_state_area" />
+
+    <TextView
+        android:id="@+id/tv_noWifi"
+        android:layout_width="match_parent"
+        android:layout_height="100px"
+        android:background="@mipmap/bg_wifi"
+        android:gravity="center_vertical"
+        android:paddingStart="80px"
+        android:text="@string/please_refresh_wifi"
+        android:textColor="#676B6C"
+        android:textSize="@dimen/content_text" />
+
+    <com.midea.fridgesettings.view.MaxHeightLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:maxHeight="1460px">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_wifi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@mipmap/bg_wifi"
+            android:overScrollMode="never"
+            android:paddingEnd="20px"
+            android:paddingStart="20px"
+            android:paddingTop="30px"
+            android:visibility="gone" />
+    </com.midea.fridgesettings.view.MaxHeightLayout>
+
+    <Button
+        android:id="@+id/extraWIFI"
+        android:layout_width="match_parent"
+        android:layout_height="100px"
+        android:layout_marginTop="20px"
+        android:background="@drawable/bt_ripple_bg"
+        android:gravity="center_vertical"
+        android:keepScreenOn="true"
+        android:paddingStart="80px"
+        android:stateListAnimator="@null"
+        android:text="@string/more"
+        android:textColor="#676B6C"
+        android:textSize="@dimen/content_text" />
+</LinearLayout>

@@ -1,0 +1,409 @@
+请将最新的修改内容添加到顶部
+==========================================================================
+
+修改日期：2017-07-20 17:45
+修改问题：
+5712 【设置】在设置界面点下面的“更多”，输入SSID后，点取消或连接，再次点更多，输入框应清空 
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/wifi/WifiConnectDialog.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+==========================================================================
+
+修改日期：2017-07-20 17:33
+修改问题：升级界面代码重构
+5543 【设置】进入设置界面，点时间与日期模块，手动调节时间大于12小时，打开adb logcat -v time -s sstang日志，日志里面ROM显示正在下载，再点在线升级模块，再点左下角返回，日志里ROM显示暂停下载
+5589 【设置】点击升级按钮，没有升级确认界面，直接显示关机并进入升级进程，建议增加确认功能
+5597 【设置】OTA主动下载过程中，断网，界面还显示下载中，请稍后。。。应该显示“下载失败”
+5644 【设置】主动下载ROM过程中，点击左下角返回，界面弹出setting停止运行
+5660 【设置】OTA主动下载过程中，日志里显示ROM下载暂停11111，但是界面的下载进度条和取消下载字样没有回收
+5653 【在线升级】进入设置界面，点在线升级，检测到有新的版本时，点下载，进入下载界面，再点设置界面的Wi-Fi，断开Wi-Fi，再点在线升级状态没有改变
+5661 【在线升级】主动下载，屏端界面一直停留在下载界面没动，下载时日志上突然显示暂停下载（已上传日志，请查看）
+【设置】进入设置界面，调时间进入主动下载，再点在线升级，界面跳转到下载中的界面，界面期望是有检测到下载的界面
+5691 【设置】页面左下角应该显示当前页面名称“设置”，而不是首页
+5686 【设置】主动下载结束，界面却显示下载失败
+修改文件：
+
+M       app/build.gradle
+M       app/src/main/AndroidManifest.xml
+A  +    app/src/main/java/com/midea/fridgesettings/OtaActivity.java
+M       app/src/main/java/com/midea/fridgesettings/SettingsActivity.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+A       app/src/main/java/com/midea/fridgesettings/model/OtaUpdateInfo.java
+A  +    app/src/main/res/drawable/ota_bg.xml
+A  +    app/src/main/res/drawable/ota_blue_btn.xml
+A  +    app/src/main/res/drawable/ota_grey_btn.xml
+A  +    app/src/main/res/layout/activity_ota.xml
+A  +    app/src/main/res/mipmap-mdpi/bg_shengji.png
+A  +    app/src/main/res/mipmap-mdpi/black_oval.png
+A  +    app/src/main/res/mipmap-mdpi/fuxuan01.png
+A  +    app/src/main/res/mipmap-mdpi/fuxuan02.png
+A  +    app/src/main/res/mipmap-mdpi/icon_gujian.png
+M       app/src/main/res/values-zh/strings.xml
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+
+==========================================================================
+
+修改日期：2017-07-19 15:33
+修改问题：更新界面代码重构
+跟新update 的接口
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/BaseApplication.kt
+M       app/src/main/java/com/midea/fridgesettings/SettingsActivity.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/res/layout/fragment_update.xml
+M       app/src/main/res/values-zh/strings.xml
+D       fridge_control_util/src/main/aidl/com/midea/update/RomDownLoadListener.aidl
+D       fridge_control_util/src/main/aidl/com/midea/update/UpGradeListener.aidl
+M       fridge_control_util/src/main/aidl/com/midea/update/UpGradeManager.aidl
+M       fridge_control_util/src/main/java/com/midea/fridge/utils/update/FridgeUpdateUtil.java
+D       fridge_control_util/src/main/java/com/midea/fridge/utils/update/UpdateInfo.java
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+
+==========================================================================
+
+修改日期：2017-07-14 14:20
+修改问题：添加直接跳转WIFI 的方法
+跟新update 的接口
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/SettingsActivity.kt
+M       app/src/main/java/com/midea/fridgesettings/TabFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UserFragment.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-13 18:06
+修改问题：我的界面添加积分展示
+修改文件：
+M       app/src/main/res/layout/fragment_user.xml
+A  +    app/src/main/res/mipmap-mdpi/ic_coin.png
+A  +    app/src/main/res/mipmap-mdpi/ic_coin_rule.png
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-13 16:15
+修改问题：给开发者模式的两个监听加上弱引用防止内存泄露
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/DeveloperActivity.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+
+==========================================================================
+
+修改日期：2017-07-13 15:17
+修改问题：5685 【设置】强制全室化霜打开后一直在开、关之间跳
+5684 【设置】强制运行和强制化霜可以并存，应该是互斥
+5683 【设置】商演按钮打开后，返回在进入显示关闭
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/DeveloperActivity.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-13 10:45
+修改问题：修改一些monkey出来的exception
+修改文件：
+M       app/src/main/AndroidManifest.xml
+M       app/src/main/java/com/midea/fridgesettings/AboutFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/DateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/SettingsActivity.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+
+==========================================================================
+
+修改日期：2017-07-12 18:05
+修改问题：
+5644 【设置】主动下载ROM过程中，点击左下角返回，界面弹出setting停止运行
+5645 【设置】修改时间周期大于12H，点击左下角的返回键，页面弹出设置停止运行
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/BaseFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-12 18:05
+修改问题：
+5603 【我的】在未连网的情况下，进入设置页面点"我的"，不应弹出登录框，应弹出强制连网框
+修改文件：
+M       app/src/main/res/layout/dialog_layout.xml
+M       app/src/main/res/values-zh/strings.xml
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-12 17:55
+修改问题：
+5647 【WI-Fi】连开放式网络，会弹出连接无响应，但是可以连接成功
+5596 【设置】WIFI界面缺少更多----手动添加SSID的功能
+修改文件：
+
+M       app/src/main/java/com/midea/fridgesettings/WifiFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/model/ItemInfo.kt
+A       app/src/main/java/com/midea/fridgesettings/view/MaxHeightLayout.kt
+M       app/src/main/java/com/midea/fridgesettings/wifi/WifiConnectDialog.kt
+M       app/src/main/java/com/midea/fridgesettings/wifi/WifiControl.kt
+M       app/src/main/res/layout/fragment_wifi.xml
+M       app/src/main/res/layout/wifi_connect_dialog.xml
+A  +    app/src/main/res/layout/wifi_connect_dialog_cus.xml
+M       app/src/main/res/layout/wifi_connect_dialog_psd.xml
+A       app/src/main/res/layout/wifi_custom_spinner_dropdown_item.xml
+A  +    app/src/main/res/layout/wifi_custom_spinner_item.xml
+M       app/src/main/res/mipmap-mdpi/et_wifi_input_bg.9.png
+A  +    app/src/main/res/mipmap-mdpi/expand_arrow.png
+A       app/src/main/res/values/arrays.xml
+A       app/src/main/res/values/attrs.xml
+M       app/src/main/res/values-zh/strings.xml
+
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-11 16:00
+修改问题：
+5613 【Wi-Fi】已连接网络，成功连接别的网络，再连之前连过的网络，会弹出拒绝连接的弹出框
+5617 【Wi-Fi】已成功连接网络，再去连别的网络，连网超时的情况下，弹框消失，Wi-Fi界面，界面左上方“选择网络...”处换成“正在重新扫描...”字样
+合并连接过的WIFI连接界面和未连接过的WIFI连接界面
+修改文件：
+
+M       app/src/main/java/com/midea/fridgesettings/WifiFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/wifi/WifiConnectDialog.kt
+M       app/src/main/java/com/midea/fridgesettings/wifi/WifiControl.kt
+M       app/src/main/res/values-zh/strings.xml
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+
+==========================================================================
+
+修改日期：2017-07-11 10:20
+修改问题：
+5613 【Wi-Fi】已连接网络，成功连接别的网络，再连之前连过的网络，会弹出拒绝连接的弹出框
+修改文件：
+
+M       app/src/main/java/com/midea/fridgesettings/wifi/WifiConnectDialog.kt
+M       app/src/main/java/com/midea/fridgesettings/wifi/WifiControl.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-10 19:30
+修改问题：
+5448 【设置】已连接一个wifi，再连接别的wifi时，输入密码正确，会显示拒绝加入
+修改文件：
+
+M       app/src/main/java/com/midea/fridgesettings/wifi/WifiConnectDialog.kt
+M       app/src/main/res/values-zh/strings.xml
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-10 16:40
+修改问题：
+5603 【我的】在未连网的情况下，进入设置页面点"我的"，不应弹出登录框，应弹出强制连网框
+5588 【设置】OTA强制下载结束后，需要点击进入在线升级页面才查询显示小红点，建议修改为下载结束后用户打开设置页面即显示小红点
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/SettingsActivity.kt
+M       app/src/main/java/com/midea/fridgesettings/TabFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UserFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/view/CustomDialog.kt
+M       app/src/main/res/values/colors.xml
+M       app/src/main/res/values-zh/strings.xml
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-10 10:10
+修改问题：
+5556 【在线升级】在设置模块里面点“在线升级”，有检测到新的版本可供下载时，点“下载”按钮，当正在下载的过程中，不能进入屏保，需在下载页面保持常亮
+5564 【设置】设置----Wi-Fi界面，连接WIFI成功后，再点设置界面其他的模块，比如：点“绑定手机”，再点“Wi-Fi”模块，此时Wi-Fi不需要刷新，应该直接显示Wi-Fi列表
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/WifiFragment.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-10 09:30
+修改问题：
+在时间与日期界面，关闭自动同步网络时间，日期显示当前日期，快速滑动日期，日期没有成功修改，又跳回当前日期
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/DateFragment.kt
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2107-07-06 17:52
+修改问题：
+5475 【Wi-Fi】点一个一直wifi，在弹出框上点显示密码，点取消，弹框消失，再点另外一个wifi时弹出框的显示密码不应勾上 
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/wifi/WifiConnectDialog.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-06 17:42
+修改问题：
+代码整理处理能处理的异常信息
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/AboutFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/AddressFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/AgreementFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/BluetoothFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/DateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/DisplayFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/PhoneFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/SoundFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UserFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/WifiFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/model/DataProvider.kt
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-06 17:00
+修改问题：
+代码整理处理能处理的异常信息
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/AboutFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/DeveloperActivity.kt
+M       app/src/main/java/com/midea/fridgesettings/SettingsActivity.kt
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/UserFragment.kt
+M       app/src/main/java/com/midea/fridgesettings/WifiFragment.kt
+
+
+涉及项目：所有
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-06 13:50
+修改问题：
+5442 【设置】在断网的情况下，在首页点需要连网的模块，有强制联网弹出框，点“去连网”，没有反应，应该跳转到新的设置页面
+
+修改文件：
+M       app/src/main/AndroidManifest.xml
+
+
+涉及项目：543/650/720
+修改人：汤森森
+==========================================================================
+
+==========================================================================
+
+
+修改日期：2017-07-06 11:10
+修改问题：
+5285 【设置】点击设置--关于冰箱中的重启应用按钮后，重启界面显示unknown oneshot boot target
+	
+修改文件：
+M       app/src/main/java/com/midea/fridgesettings/AboutFragment.kt
+
+涉及项目：543/650
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-05 17:50
+修改问题：
+5458 【我的】在“我的”界面登录默认图修改下
+5439 【设置】在线升级页面的冰箱图片需要显示为650冰箱
+	
+修改文件：
+M       app/build.gradle
+M       app/src/main/java/com/midea/fridgesettings/UpdateFragment.kt
+M       app/src/main/res/layout/fragment_update.xml
+D       app/src/main/res/mipmap-mdpi/fridge.png
+        > moved to app/src/main/res/mipmap-mdpi/pic_543.png
+M       app/src/main/res/mipmap-mdpi/ic_profile.png
+A  +    app/src/main/res/mipmap-mdpi/pic_543.png
+        > moved from app/src/main/res/mipmap-mdpi/fridge.png
+A       app/src/main/res/mipmap-mdpi/pic_650.png
+
+
+涉及项目：543/650
+修改人：陈剑
+==========================================================================
+
+==========================================================================
+
+修改日期：2017-07-05 16:50
+修改问题：
+5430 【设置】650需要屏蔽蓝牙显示
+5441 【蓝牙】543需要屏蔽蓝牙模块显示
+用户协议文字居中
+	
+修改文件：
+M       app/build.gradle
+M       app/src/main/java/com/midea/fridgesettings/model/DataProvider.kt
+M       app/src/main/res/layout/fragment_agreement.xml
+
+涉及项目：543/650
+修改人：陈剑
+==========================================================================

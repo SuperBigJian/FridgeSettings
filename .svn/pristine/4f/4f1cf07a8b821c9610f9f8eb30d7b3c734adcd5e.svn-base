@@ -1,0 +1,99 @@
+package com.midea.fridgesettings.wifi
+
+import android.app.Dialog
+import android.content.Context
+import android.os.Bundle
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
+import android.view.View
+import android.view.Window
+import com.midea.fridgesettings.R
+import com.midea.fridgesettings.model.AccessPoint
+import kotlinx.android.synthetic.main.wifi_connect_dialog.*
+
+
+/**
+ * Created by chenjian on 17-6-7.
+ */
+class WifiConnectDialog(context: Context, val ap: AccessPoint) : Dialog(context) {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(R.layout.wifi_connect_dialog)
+        initView()
+        setPasswordListener()
+    }
+
+    private fun setPasswordListener() {
+        val lengthLimit = if (ap.encryptionType?.contains("WPA") ?: false) 8 else 5
+        et_wifi_dialog_password.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                if (null != s && s.toString().length >= lengthLimit) {
+                    with(bt_wifi_dialog_connect) {
+                        setTextColor(0xFF0078ff.toInt())
+                        isEnabled = true
+                    }
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (null == s || s.toString().length < lengthLimit) {
+                    with(bt_wifi_dialog_connect) {
+                        setTextColor(0xFF999999.toInt())
+                        isEnabled = false
+                    }
+                }
+            }
+        })
+    }
+
+    private fun initView() {
+        tv_wifi_dialog_title.text = ap.ssid
+        if (ap.networkId.compareTo(0) < 0) {
+            tl_wifiInfo.visibility = View.GONE
+            et_wifi_dialog_password.visibility = View.VISIBLE
+            bt_wifi_dialog_remove.visibility = View.GONE
+            cb_wifi_dialog_showpd.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    et_wifi_dialog_password.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                } else {
+                    et_wifi_dialog_password.inputType = InputType.TYPE_CLASS_TEXT or (InputType.TYPE_TEXT_VARIATION_PASSWORD)
+                }
+            }
+            bt_wifi_dialog_connect.setOnClickListener {
+                ap.password = et_wifi_dialog_password.text.toString()
+                WiFiHandler.instance().connect(ap)
+                dismiss()
+            }
+            bt_wifi_dialog_cancel.visibility = View.VISIBLE
+            bt_wifi_dialog_cancel.setOnClickListener { dismiss() }
+        } else {
+            bt_wifi_dialog_cancel.visibility = View.GONE
+            et_wifi_dialog_password.visibility = View.GONE
+            cb_wifi_dialog_showpd.visibility = View.GONE
+            if (WiFiHandler.instance().isConnected(ap)) {
+                tl_wifiInfo.visibility = View.VISIBLE
+                bt_wifi_dialog_connect.setOnClickListener {
+                    dismiss()
+                }
+            } else {
+                tl_wifiInfo.visibility = View.GONE
+                bt_wifi_dialog_connect.setOnClickListener {
+                    WiFiHandler.instance().connect(ap.networkId)
+                    dismiss()
+                }
+            }
+            bt_wifi_dialog_remove.setOnClickListener {
+                WiFiHandler.instance().remove(ap.networkId)
+                dismiss()
+            }
+        }
+
+    }
+}

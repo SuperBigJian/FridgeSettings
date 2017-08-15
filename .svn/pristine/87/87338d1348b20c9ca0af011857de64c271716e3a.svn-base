@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20px">
+
+    <com.github.aakira.expandablelayout.ExpandableLinearLayout
+        android:id="@+id/exLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/bg_wifi"
+        android:orientation="vertical"
+        android:paddingEnd="20px"
+        android:paddingStart="20px"
+        app:ael_duration="300"
+        app:ael_interpolator="fastOutSlowIn"
+        app:ael_orientation="vertical">
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/radioOpen"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="40px"
+            android:paddingStart="40px" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@drawable/divider_fgtab" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40px"
+            android:layout_marginTop="40px"
+            android:text="@string/time_range"
+            android:textColor="#FF676B6C"
+            android:textSize="30px" />
+
+        <RelativeLayout
+            android:id="@+id/rl_Wheel"
+            android:layout_width="match_parent"
+            android:layout_height="660px"
+            android:gravity="center"
+            android:paddingBottom="84px"
+            android:paddingTop="84px">
+
+            <TextView
+                android:id="@+id/tvFrom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="从"
+                android:textColor="#4189A2"
+                android:textSize="32px" />
+
+            <com.aigestudio.wheelpicker.WheelPicker
+                android:id="@+id/from_hour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="55px"
+                android:layout_toRightOf="@id/tvFrom"
+                app:wheel_atmospheric="true"
+                app:wheel_cyclic="false"
+                app:wheel_item_align="center"
+                app:wheel_item_text_color="#9B9B9B"
+                app:wheel_item_text_size="36px"
+                app:wheel_selected_item_text_color="#000" />
+
+            <TextView
+                android:id="@+id/tvFromHour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="8px"
+                android:layout_toRightOf="@id/from_hour"
+                android:text="时"
+                android:textColor="#4189A2"
+                android:textSize="36px" />
+
+            <com.aigestudio.wheelpicker.WheelPicker
+                android:id="@+id/from_minute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="50px"
+                android:layout_toRightOf="@id/tvFromHour"
+                app:wheel_atmospheric="true"
+                app:wheel_cyclic="false"
+                app:wheel_item_align="center"
+                app:wheel_item_text_color="#9B9B9B"
+                app:wheel_item_text_size="36px"
+                app:wheel_selected_item_text_color="#000" />
+
+            <TextView
+                android:id="@+id/tvFromMinute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="8px"
+                android:layout_toRightOf="@id/from_minute"
+                android:text="分"
+                android:textColor="#4189A2"
+                android:textSize="36px" />
+
+            <TextView
+                android:id="@+id/tvTo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="50px"
+                android:layout_toRightOf="@id/tvFromMinute"
+                android:text="到"
+                android:textColor="#4189A2"
+                android:textSize="32px" />
+
+            <com.aigestudio.wheelpicker.WheelPicker
+                android:id="@+id/to_hour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="50px"
+                android:layout_toRightOf="@id/tvTo"
+                app:wheel_atmospheric="true"
+                app:wheel_cyclic="false"
+                app:wheel_item_align="center"
+                app:wheel_item_text_color="#9B9B9B"
+                app:wheel_item_text_size="36px"
+                app:wheel_selected_item_text_color="#000" />
+
+            <TextView
+                android:id="@+id/tvToHour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="8px"
+                android:layout_toRightOf="@id/to_hour"
+                android:text="时"
+                android:textColor="#4189A2"
+                android:textSize="36px" />
+
+            <com.aigestudio.wheelpicker.WheelPicker
+                android:id="@+id/to_minute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="50px"
+                android:layout_toRightOf="@id/tvToHour"
+                app:wheel_atmospheric="true"
+                app:wheel_cyclic="false"
+                app:wheel_item_align="center"
+                app:wheel_item_text_color="#9B9B9B"
+                app:wheel_item_text_size="36px"
+                app:wheel_selected_item_text_color="#000" />
+
+            <TextView
+                android:id="@+id/tvToMinute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="8px"
+                android:layout_toRightOf="@id/to_minute"
+                android:text="分"
+                android:textColor="#4189A2"
+                android:textSize="36px" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="60px"
+                android:layout_centerVertical="true">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_gravity="top"
+                    android:background="@drawable/divider_fgtab" />
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_gravity="bottom"
+                    android:background="@drawable/divider_fgtab" />
+            </FrameLayout>
+        </RelativeLayout>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@drawable/divider_fgtab" />
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/weatherOpen"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:layout_below="@id/radioOpen"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="40px"
+            android:paddingStart="40px" />
+
+    </com.github.aakira.expandablelayout.ExpandableLinearLayout>
+</FrameLayout>

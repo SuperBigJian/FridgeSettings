@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="800px"
+    android:layout_height="wrap_content"
+    android:background="@mipmap/bg_wifi"
+    android:orientation="vertical"
+    android:paddingBottom="50px"
+    android:paddingEnd="40px"
+    android:paddingStart="40px"
+    android:paddingTop="50px">
+
+    <TextView
+        android:id="@+id/tv_wifi_dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20px"
+        android:textColor="#636262"
+        android:textSize="30px" />
+
+    <TableLayout
+        android:id="@+id/tl_wifiInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10px"
+        android:stretchColumns="0">
+
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/wifi_state" />
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="已连接" />
+        </TableRow>
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/wifi_strength" />
+
+            <TextView
+                android:id="@+id/tl_tv_wifiStrength"
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="强" />
+        </TableRow>
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/wifi_speed" />
+
+            <TextView
+                android:id="@+id/tl_tv_wifiSpeed"
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="702Mbps" />
+        </TableRow>
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/ip_adress" />
+
+            <TextView
+                android:id="@+id/tl_tv_ipAddress"
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="192.168.0.1" />
+        </TableRow>
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/security" />
+
+            <TextView
+                android:id="@+id/tl_tv_security"
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="WPA/WP2 PSK" />
+        </TableRow>
+
+    </TableLayout>
+
+    <EditText
+        android:id="@+id/et_wifi_dialog_password"
+        android:layout_width="match_parent"
+        android:layout_height="80px"
+        android:layout_marginBottom="30px"
+        android:layout_marginStart="10px"
+        android:layout_marginEnd="10px"
+        android:layout_marginTop="30px"
+        android:hint="@string/please_input_password"
+        android:background="@mipmap/et_wifi_input_bg"
+        android:textCursorDrawable="@mipmap/et_wifi_cursor"
+        android:inputType="textPassword"
+        android:textColor="#000000"
+        android:textColorHint="#C3C3C3"
+        android:textSize="30px" />
+
+    <CheckBox
+        android:id="@+id/cb_wifi_dialog_showpd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30px"
+        android:layout_marginStart="10px"
+        android:button="@drawable/cb_showpsd"
+        android:checked="false"
+        android:paddingStart="10px"
+        android:text="@string/show_password"
+        android:textColor="#636262"
+        android:textSize="@dimen/content_text" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20px"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/bt_wifi_dialog_remove"
+            android:layout_width="220px"
+            android:layout_height="70px"
+            android:layout_alignParentStart="true"
+            android:layout_marginEnd="30px"
+            android:background="@drawable/bt_wifi_cancel"
+            android:text="@string/remove_password"
+            android:textColor="#FF7B00"
+            android:textSize="36px" />
+
+        <Button
+            android:id="@+id/bt_wifi_dialog_cancel"
+            android:layout_width="220px"
+            android:layout_height="70px"
+            android:layout_toRightOf="@id/bt_wifi_dialog_remove"
+            android:background="@drawable/bt_wifi_cancel"
+            android:text="@string/cancel"
+            android:textColor="#FF7B00"
+            android:textSize="36px" />
+
+        <Button
+            android:id="@+id/bt_wifi_dialog_connect"
+            android:layout_width="220px"
+            android:layout_height="70px"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/bt_wifi_ok"
+            android:text="@string/connect"
+            android:textColor="#FFF"
+            android:textSize="36px" />
+    </RelativeLayout>
+
+</LinearLayout>

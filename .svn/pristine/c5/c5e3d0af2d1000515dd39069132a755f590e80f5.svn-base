@@ -1,0 +1,22 @@
+package com.midea.fridgesettings
+
+import android.app.Application
+import com.midea.fridge.utils.accountutil.AccountUtil
+import com.midea.fridge.utils.config.FridgeConfigUtil
+import com.midea.fridge.utils.fridgecontrolutil.FridgeControlUtil
+import com.midea.fridge.utils.fridgecontrolutil.PadControlUtil
+import com.midea.fridgesettings.wifi.WiFiHandler
+
+/**
+ * Created by chenjian on 17-6-20.
+ */
+class BaseApplication : Application() {
+    override fun onCreate() {
+        WiFiHandler.instance().init(this)
+        FridgeConfigUtil.getInstance().init(this)
+        FridgeControlUtil.getInstance().init(this)
+        PadControlUtil.getInstance().init(this)
+        AccountUtil.getInstance().init(this)
+        super.onCreate()
+    }
+}

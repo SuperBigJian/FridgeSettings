@@ -1,0 +1,15 @@
+package com.midea.fridgesettings
+
+import android.app.Application
+import com.midea.fridgesettings.wifi.WiFiHandler
+
+/**
+ * Created by chenjian on 6/6/17.
+ */
+class BaseApplication : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+        WiFiHandler.instance().init(this)
+    }
+}

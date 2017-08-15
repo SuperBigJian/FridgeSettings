@@ -1,0 +1,19 @@
+package com.midea.fridgesettings.model
+
+import com.midea.fridgesettings.BaseFragment
+import java.util.ArrayList
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+
+class FragmentTabInfo(val icon: Int, val title: String, val tabType: BaseFragment.FragmentTag, var isSelect: Boolean = false)
+
+class AccessPoint(var ssid: String = "",
+                  var bssid: String = "",
+                  var password: String? = "",
+                  var signalStrength: Float = 0f,
+                  var encryptionType: String? = "",
+                  var networkId: Int = -1,
+                  var relativeAPs: ArrayList<AccessPoint> = ArrayList<AccessPoint>())
+

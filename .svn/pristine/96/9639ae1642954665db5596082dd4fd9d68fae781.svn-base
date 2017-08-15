@@ -1,0 +1,134 @@
+package com.midea.fridgesettings
+
+import android.animation.ValueAnimator
+import android.app.Dialog
+import android.content.Intent
+import android.graphics.Color
+import android.os.SystemClock
+import com.midea.fridge.utils.config.FridgeConfigUtil
+import com.midea.fridge.utils.fridgecontrolutil.FridgeControlUtil
+import com.midea.fridgesettings.utils.LogUtils
+import com.midea.fridgesettings.view.CustomDialog
+import com.midea.fridgesettings.view.SwitchEntry
+import kotlinx.android.synthetic.main.fragment_about.*
+import org.jetbrains.anko.*
+import org.jetbrains.anko.sdk25.coroutines.onCheckedChange
+import org.jetbrains.anko.sdk25.coroutines.onClick
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class AboutFragment(type: FragmentTag) : BaseFragment(type) {
+
+    val arrowAnim: ValueAnimator = ValueAnimator.ofFloat(0f, 180f)
+    var isRotated = false
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_about
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        tvFriModel.text = FridgeConfigUtil.getInstance().deviceInfo.name
+        tvDeviceId.text = FridgeControlUtil.getInstance().deviceId
+        tvSysVersion.text = android.os.Build.DISPLAY
+
+        tvSysVersion.onClick {
+            openDeveloperMode()
+        }
+
+        initSwitch(kerLog, R.string.kernel_log)
+        initSwitch(sysLog, R.string.system_log)
+
+        arrowAnim.duration = 300
+        arrowAnim.addUpdateListener { animation ->
+            val currentValue = animation.animatedValue as Float
+            ivArrow.rotationX = if (isRotated) 180 - currentValue else currentValue
+        }
+
+        expandItem.collapse()
+        expandItem.setDuration(300)
+        llLog.onClick {
+            expandItem.toggle()
+            isRotated = ivArrow.rotationX > 90
+            arrowAnim.start()
+
+        }
+
+        recovery.onClick {
+            val builder = CustomDialog.Builder(activity)
+            builder.setMessage(R.string.recovery_message)
+            builder.setPositiveButton(null, object : CustomDialog.OnClickListener {
+                override fun onClick(dialog: Dialog) {
+                    activity.sendBroadcast(Intent("android.intent.action.MASTER_CLEAR"))
+                }
+            }).setNegativeButton(null, null)
+
+            builder.createTwoButtonDialog().show()
+        }
+
+        reStart.onClick {
+            val intent = Intent(Intent.ACTION_REBOOT)
+            intent.putExtra("nowait", 1)
+            intent.putExtra("interval", 1)
+            intent.putExtra("window", 0)
+            activity.sendBroadcast(intent)
+        }
+    }
+
+    private fun initSwitch(view: SwitchEntry, res: Int) {
+        with(view) {
+            tvTitle.textSize = 24f
+            tvTitle.textColor = Color.rgb(103, 107, 108)
+            tvTitle.textResource = res
+            switch.onCheckedChange { _, isChecked ->
+                onSwitchChange(view, isChecked)
+            }
+        }
+    }
+
+    private fun onSwitchChange(view: SwitchEntry, isChecked: Boolean) {
+        when (view.id) {
+            R.id.kerLog -> {
+                if (isChecked) {
+                    LogUtils.getInstance(context).startAppLog()
+                } else {
+                    LogUtils.getInstance(context).stopAppLog()
+                }
+            }
+            R.id.sysLog -> {
+                if (isChecked) {
+                    LogUtils.getInstance(context).startAppLog()
+                } else {
+                    LogUtils.getInstance(context).stopAppLog()
+                }
+            }
+        }
+
+    }
+
+    val mHints = Array<Long>(10, { _ -> 0 })
+
+    private fun openDeveloperMode() {
+        System.arraycopy(mHints, 1, mHints, 0, mHints.size - 1)
+        mHints[mHints.size - 1] = SystemClock.uptimeMillis()
+        if (SystemClock.uptimeMillis() - mHints[0] <= 3000) {
+            val intent = intentFor<DeveloperActivity>()
+            intent.singleTop()
+            startActivity(intent)
+        }
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+        ivArrow.imageResource = if (expandItem.isExpanded) R.mipmap.ic_arrow_up else R.mipmap.ic_arrow_down
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+    }
+}
+

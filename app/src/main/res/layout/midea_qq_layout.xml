@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@mipmap/bg_wifi"
+    android:orientation="vertical"
+    android:paddingBottom="40px"
+    android:paddingLeft="11px"
+    android:paddingRight="11px"
+    android:paddingTop="40px">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@mipmap/qq_group_01" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@mipmap/qq_group_02" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@mipmap/qq_group_03" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@mipmap/qq_group_04" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30px"
+        android:divider="@drawable/divider_qq"
+        android:dividerHeight="1px"
+        android:orientation="horizontal"
+        android:showDividers="middle">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/QQ"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/qq_group_01" />
+
+            <TextView
+                style="@style/Area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/qq_group_01_area" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/QQ"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/qq_group_02" />
+
+            <TextView
+                style="@style/Area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/qq_group_02_area" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/QQ"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/qq_group_03" />
+
+            <TextView
+                style="@style/Area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/qq_group_03_area" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/QQ"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/qq_group_04" />
+
+            <TextView
+                style="@style/Area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/qq_group_04_area" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

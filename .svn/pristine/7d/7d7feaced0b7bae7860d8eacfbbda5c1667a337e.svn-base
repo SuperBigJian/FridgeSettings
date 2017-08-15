@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20px">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/radioOpen"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:background="@mipmap/bg_wifi"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="20px"
+            android:paddingStart="20px" />
+
+        <com.github.aakira.expandablelayout.ExpandableLinearLayout
+            android:id="@+id/exLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-5px"
+            android:background="@mipmap/log_bg"
+            android:descendantFocusability="afterDescendants"
+            android:divider="@drawable/divider_fgtab"
+            android:dividerHeight="1px"
+            android:orientation="vertical"
+            android:paddingEnd="20px"
+            android:paddingStart="20px"
+            android:showDividers="middle"
+            app:ael_duration="1000"
+            app:ael_orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/rl_Wheel"
+                android:layout_width="match_parent"
+                android:layout_height="660px"
+                android:paddingBottom="84px"
+                android:paddingTop="84px">
+
+                <com.aigestudio.wheelpicker.widgets.WheelDatePicker
+                    android:id="@+id/wp_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="110px" />
+
+            </RelativeLayout>
+
+            <com.midea.fridgesettings.view.SwitchEntry
+                android:id="@+id/weatherOpen"
+                android:layout_width="match_parent"
+                android:layout_height="100px"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingEnd="20px"
+                android:paddingStart="20px" />
+
+        </com.github.aakira.expandablelayout.ExpandableLinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20px">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="280px"
+        android:background="@mipmap/bg_wifi"
+        android:padding="40px">
+
+        <ImageView
+            android:id="@+id/codeImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="20px"
+            android:src="@mipmap/qr_code_iplus" />
+
+        <TextView
+            android:id="@+id/codeTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8px"
+            android:layout_toRightOf="@id/codeImage"
+            android:text="@string/scan_code_iplus"
+            android:textColor="#676B6C"
+            android:textSize="28px" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/codeTitle"
+            android:layout_marginTop="20px"
+            android:layout_toRightOf="@id/codeImage"
+            android:lineSpacingExtra="10px"
+            android:text="@string/scan_code_iplus_content"
+            android:textColor="#676B6C"
+            android:textSize="20px" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="280px"
+        android:layout_marginTop="20px"
+        android:background="@mipmap/bg_wifi"
+        android:padding="40px">
+
+        <ImageView
+            android:id="@+id/codeImage1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="20px"
+            android:src="@mipmap/qr_code_weixin" />
+
+        <TextView
+            android:id="@+id/codeTitle1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20px"
+            android:layout_toRightOf="@id/codeImage1"
+            android:text="@string/scan_code_weixin"
+            android:textColor="#676B6C"
+            android:textSize="28px" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/codeTitle1"
+            android:layout_marginTop="30px"
+            android:layout_toRightOf="@id/codeImage1"
+            android:lineSpacingExtra="10px"
+            android:text="@string/scan_code_weixin_content"
+            android:textColor="#676B6C"
+            android:textSize="20px" />
+    </RelativeLayout>
+</LinearLayout>

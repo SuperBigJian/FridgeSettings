@@ -1,0 +1,75 @@
+package com.midea.fridgesettings.model
+
+import com.midea.fridgesettings.*
+import com.midea.fridgesettings.BaseFragment.FragmentTag
+
+/**
+ * Created by chenjian on 6/3/17.
+ */
+fun getTabItemInfo(): ArrayList<FragmentTabInfo> {
+    val list = arrayListOf<FragmentTabInfo>()
+    list.add(FragmentTabInfo(0, "网络", FragmentTag.FRAGMENT_TAB_HEAD))
+    list.add(FragmentTabInfo(R.mipmap.ic_wifi, "WI-FI", FragmentTag.FRAGMENT_TAB_WIFI, true))
+    if (BuildConfig.FLAVOR_model != "650"
+            && BuildConfig.FLAVOR_model != "543") {
+        list.add(FragmentTabInfo(R.mipmap.ic_bluetooth, "蓝牙", FragmentTag.FRAGMENT_TAB_BLUETOOTH))
+    }
+
+    list.add(FragmentTabInfo(0, "账号", FragmentTag.FRAGMENT_TAB_HEAD))
+    list.add(FragmentTabInfo(R.mipmap.ic_user, "我的", FragmentTag.FRAGMENT_TAB_USER))
+    //list.add(FragmentTabInfo(R.mipmap.ic_address, "收货地址管理", FragmentTag.FRAGMENT_TAB_ADDRESS))
+    list.add(FragmentTabInfo(R.mipmap.ic_phone, "绑定手机", FragmentTag.FRAGMENT_TAB_PHONE))
+
+    list.add(FragmentTabInfo(0, "设备", FragmentTag.FRAGMENT_TAB_HEAD))
+    list.add(FragmentTabInfo(R.mipmap.ic_display, "显示和亮度", FragmentTag.FRAGMENT_TAB_DISPLAY))
+    list.add(FragmentTabInfo(R.mipmap.ic_sound, "音量", FragmentTag.FRAGMENT_TAB_SOUND))
+
+    list.add(FragmentTabInfo(0, "系统", FragmentTag.FRAGMENT_TAB_HEAD))
+    list.add(FragmentTabInfo(R.mipmap.ic_date, "时间和日期", FragmentTag.FRAGMENT_TAB_DATE))
+    list.add(FragmentTabInfo(R.mipmap.ic_about, "关于冰箱", FragmentTag.FRAGMENT_TAB_ABOUT))
+    list.add(FragmentTabInfo(R.mipmap.ic_agreement, "用户协议", FragmentTag.FRAGMENT_TAB_AGREEMENT))
+    list.add(FragmentTabInfo(R.mipmap.ic_update, "在线升级", FragmentTag.FRAGMENT_TAB_UPDATE))
+
+    return list
+}
+
+fun getFragment(tag: FragmentTag): BaseFragment {
+    when (tag) {
+        FragmentTag.FRAGMENT_TAB_WIFI -> {
+            return WifiFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_BLUETOOTH -> {
+            return BluetoothFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_USER -> {
+            return UserFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_ADDRESS -> {
+            return AddressFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_PHONE -> {
+            return PhoneFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_DISPLAY -> {
+            return DisplayFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_SOUND -> {
+            return SoundFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_DATE -> {
+            return DateFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_ABOUT -> {
+            return AboutFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_AGREEMENT -> {
+            return AgreementFragment(tag)
+        }
+        FragmentTag.FRAGMENT_TAB_UPDATE -> {
+            return UpdateFragment(tag)
+        }
+        else -> {
+            throw IllegalArgumentException("Unknown Type")
+        }
+    }
+}

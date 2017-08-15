@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F8F8"
+    android:orientation="vertical"
+    android:padding="@dimen/fg_padding_LandR">
+
+    <include layout="@layout/wifi_state_area" />
+
+    <TextView
+        android:id="@+id/tv_noWifi"
+        android:layout_width="match_parent"
+        android:layout_height="100px"
+        android:background="@mipmap/bg_wifi"
+        android:gravity="center_vertical"
+        android:text="@string/please_refresh_wifi"
+        android:textSize="@dimen/content_text"
+        android:textColor="#676B6C"
+        android:paddingStart="80px" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_wifi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13px"
+        android:background="@mipmap/bg_wifi"
+        android:paddingTop="29dp"
+        android:paddingStart="20px"
+        android:paddingEnd="20px"
+        android:visibility="gone" />
+</LinearLayout>

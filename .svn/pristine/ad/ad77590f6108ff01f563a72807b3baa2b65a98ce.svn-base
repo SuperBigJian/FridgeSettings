@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="33px"
+    android:layout_marginLeft="18px"
+    android:layout_marginRight="28px"
+    android:layout_marginTop="33px"
+    android:background="@mipmap/setting_detail_bg"
+    android:orientation="vertical"
+    android:padding="14px">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="32px"
+        android:text="用户协议"
+        android:textColor="#676B6C"
+        android:textSize="32px" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="22px"
+        android:layout_marginLeft="55px"
+        android:layout_marginRight="55px"
+        android:layout_marginTop="22px"
+        android:fillViewport="true">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/user_guide_protocol_content"
+            android:textColor="#676B6C"
+            android:textSize="24px" />
+
+    </ScrollView>
+
+</LinearLayout>

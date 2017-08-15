@@ -1,0 +1,24 @@
+package com.midea.fridgesettings.utils;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+ * Created by Administrator on 2016/1/6.
+ */
+public class Utils {
+
+    public static String getLogTime() {
+        SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm:ss");
+        String t = format.format(new Date());
+        return t;
+    }
+
+
+    public static String getLogFileTime() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-ddHH-mm-ss");
+        String t = format.format(new Date());
+        return t;
+    }
+
+}

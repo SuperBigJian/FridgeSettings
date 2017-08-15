@@ -1,0 +1,167 @@
+package com.midea.fridgesettings
+
+import android.os.Handler
+import android.os.Message
+import android.util.Log
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
+import com.midea.fridge.utils.config.FridgeConfigUtil
+import com.midea.fridge.utils.update.FridgeUpdateUtil
+import com.midea.update.RomDownLoadListener
+import com.midea.update.UpGradeListener
+import kotlinx.android.synthetic.main.fragment_update.*
+import org.jetbrains.anko.sdk25.coroutines.onClick
+import org.jetbrains.anko.textResource
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class UpdateFragment(type: FragmentTag) : BaseFragment(type) {
+    private val TAG = "UpdateFragment"
+    private val NEED_REFRESH_UI = 1000
+    private val NEED_UPDATE_AND_READY = 1001
+    private val NEED_UPDATE_BUT_NOT_READY = 1002
+    private val NO_UPDATE = 1003
+    private val UPDATE_ERROR = 1004
+    private val update = FridgeUpdateUtil.getInstance()
+    private val checkListener by lazy { CheckUpdateListener() }
+    private val downloadListener by lazy { DownloadListener() }
+
+
+    private val handler = object : Handler() {
+        override fun handleMessage(msg: Message?) {
+            when (msg?.what) {
+                NEED_REFRESH_UI -> {
+                    refreshUI(msg.arg1, msg.obj.toString())
+                }
+            }
+        }
+    }
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_update
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        initView()
+        checkForUpdate()
+    }
+
+    private fun initView() {
+        device.text = FridgeConfigUtil.getInstance().fullName
+        version.text = android.os.Build.DISPLAY
+        btUpdate.visibility = View.VISIBLE
+        btUpdate.onClick { checkForUpdate() }
+    }
+
+    private fun checkForUpdate() {
+        iv_check.visibility = View.VISIBLE
+        iv_check.animation = getLoadingAnimation()
+        btUpdate.isEnabled = false
+        update.checkState(checkListener)
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+    private fun getLoadingAnimation(): Animation {
+        val loadingAnim = AnimationUtils.loadAnimation(context, R.anim.am_wifi_laoding)
+        loadingAnim.interpolator = LinearInterpolator()
+        return loadingAnim
+    }
+
+    private fun refreshUI(state: Int, url: String?) {
+        Log.d(TAG, "refreshUI $state ")
+
+        iv_check.clearAnimation()
+        iv_check.visibility = View.INVISIBLE
+        btUpdate.isEnabled = true
+        when (state) {
+            NEED_UPDATE_AND_READY -> {
+                tv_curState.textResource = R.string.you_can_update_now
+                btUpdate.textResource = R.string.update
+                btUpdate.onClick { update.startUpdate() }
+                val tab = fragmentManager.findFragmentById(R.id.tabFragment)
+                if (tab is TabFragment) {
+                    tab.hasUpdate = true
+                }
+            }
+
+            NEED_UPDATE_BUT_NOT_READY -> {
+                tv_curState.textResource = R.string.has_update_need_download
+                btUpdate.textResource = R.string.download
+                btUpdate.onClick {
+                    update.downloadUpdateRom(url, downloadListener)
+                }
+            }
+
+            NO_UPDATE -> {
+                tv_curState.textResource = R.string.no_update
+                btUpdate.textResource = R.string.check_update
+                btUpdate.onClick { checkForUpdate() }
+            }
+
+            UPDATE_ERROR -> {
+                tv_curState.textResource = R.string.no_update
+                btUpdate.textResource = R.string.check_update
+                btUpdate.onClick { checkForUpdate() }
+            }
+        }
+
+    }
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+    }
+
+    private inner class CheckUpdateListener : UpGradeListener.Stub() {
+        override fun onHaveNewRom() {
+            handler.sendMessage(handler.obtainMessage(NEED_REFRESH_UI, NEED_UPDATE_AND_READY,-1,-1))
+        }
+
+        override fun onDownloadNewRom(url: String?) {
+            handler.sendMessage(handler.obtainMessage(NEED_REFRESH_UI, NEED_UPDATE_BUT_NOT_READY, -1, url))
+        }
+
+        override fun onNoNewRom() {
+            handler.sendMessage(handler.obtainMessage(NEED_REFRESH_UI, NO_UPDATE,-1,-1))
+        }
+
+        override fun onFailed() {
+            handler.sendMessage(handler.obtainMessage(NEED_REFRESH_UI, UPDATE_ERROR,-1,-1))
+        }
+    }
+
+
+    private inner class DownloadListener : RomDownLoadListener.Stub() {
+
+        override fun onStart(fileSize: Int) {
+            btUpdate.visibility = View.GONE
+            progress.visibility = View.VISIBLE
+            progress.max = fileSize
+        }
+
+        override fun onProgress(downLoadSize: Int) {
+            tv_curState.textResource = R.string.downloading
+            progress.progress = downLoadSize
+        }
+
+        override fun onFinish() {
+            btUpdate.visibility = View.VISIBLE
+            btUpdate.isEnabled = false
+            progress.visibility = View.GONE
+            tv_curState.textResource = R.string.check_rom
+            checkForUpdate()
+        }
+
+        override fun onError() {
+            tv_curState.textResource = R.string.download_fail
+        }
+    }
+}

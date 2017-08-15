@@ -1,0 +1,106 @@
+package com.midea.fridge.pad.http;
+
+import android.content.Context;
+import android.os.Build;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestHandle;
+import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.SyncHttpClient;
+import com.loopj.android.http.TextHttpResponseHandler;
+import com.midea.fridge.pad.AWEApplication;
+import com.midea.fridge.pad.config.FridgeConfigUtil;
+import com.midea.fridge.pad.storage.InfoSharedPreferences;
+import com.midea.fridge.pad.util.Utils;
+
+public class HttpUtil {
+
+	private static AsyncHttpClient mClient = new AsyncHttpClient();
+	private static SyncHttpClient mSyncClient = new SyncHttpClient();
+	
+	static{
+		mClient.setResponseTimeout(20000);
+		mClient.setConnectTimeout(20000);
+	}
+	
+	public static void get(Context context,String url, RequestParams params, TextHttpResponseHandler responseHandler){
+		addHeader();
+		if(params == null){
+			mClient.get(context, url, responseHandler);
+		}else{
+			mClient.get(context, url, params, responseHandler);
+		}
+	}
+	
+	public static void get(String url, RequestParams params, TextHttpResponseHandler responseHandler){
+		addHeader();
+		if(params == null){
+			mClient.get(url, responseHandler);
+		}else{
+			mClient.get(url, params, responseHandler);
+		}
+	}
+
+	public static RequestHandle get_return(String url, RequestParams params, TextHttpResponseHandler responseHandler){
+		addHeader();
+		if(params == null){
+			return mClient.get(url, responseHandler);
+		}else{
+			return mClient.get(url, params, responseHandler);
+		}
+	}
+	
+	public static void post(Context context,String url, RequestParams params, TextHttpResponseHandler responseHandler){
+		addHeader();
+		mClient.post(context, url, params, responseHandler);
+	}
+	
+	public static void post(Context context,String url, RequestParams params, AsyncHttpResponseHandler responseHandler){
+		addHeader();
+		mClient.post(context, url, params, responseHandler);
+	}
+	
+	public static void post(String url, RequestParams params,AsyncHttpResponseHandler responseHandler){
+		addHeader();
+		mClient.post(url, params, responseHandler);
+	}
+
+	public static void syncPost(String url, RequestParams params,AsyncHttpResponseHandler responseHandler){
+		mSyncClient.post(url, params, responseHandler);
+	}
+
+	public static void syncGet(Context context,String url, RequestParams params, TextHttpResponseHandler responseHandler){
+		addHeader();
+		if(params == null){
+			mSyncClient.get(context, url, responseHandler);
+		}else{
+			mSyncClient.get(context, url, params, responseHandler);
+		}
+	}
+	
+	public static void cancelRequests(Context context){
+		mClient.cancelRequests(context, true);
+	}
+
+	private static void addHeader(){
+		String deviceId = InfoSharedPreferences.getSharedPreferences().getDeviceId();
+		String userId = InfoSharedPreferences.getSharedPreferences().getUserInfo().uid;
+		String type = FridgeConfigUtil.getFridgePadModel();
+		String osType = "Android" + Build.VERSION.RELEASE;
+		String channel = String.valueOf(3);
+		String resolution = String.valueOf(AWEApplication.mScreenWidth) + "*" + String.valueOf(AWEApplication.mScreenHeight);
+		int version = Utils.getVerCode();
+		String requestTime = String.valueOf(System.currentTimeMillis());
+		mClient.addHeader("fridgeid", deviceId);
+		mClient.addHeader("userid", userId);
+		mClient.addHeader("type", type);
+		mClient.addHeader("ostype", osType);
+		mClient.addHeader("channel", channel);
+		mClient.addHeader("resolution", resolution);
+		mClient.addHeader("version", version + "");
+		mClient.addHeader("requesttime", requestTime);
+		mClient.addHeader("deviceid", Utils.getMac(AWEApplication.mContext));
+		mClient.addHeader("rom", android.os.Build.DISPLAY);
+	}
+}

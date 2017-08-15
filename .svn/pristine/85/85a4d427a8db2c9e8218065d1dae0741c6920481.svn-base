@@ -1,0 +1,11 @@
+// UpGradeListener.aidl
+package com.midea.update;
+
+// Declare any non-default types here with import statements
+
+interface UpGradeListener {
+    void onHaveNewRom();
+    void onDownloadNewRom(String url);
+    void onNoNewRom();
+    void onFailed();
+}

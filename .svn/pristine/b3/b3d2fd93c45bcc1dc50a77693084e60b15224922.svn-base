@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20px">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10px"
+        android:layout_marginTop="23px"
+        android:text="@string/device_params"
+        android:textSize="@dimen/content_text" />
+
+    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/tl_wifiInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13px"
+        android:background="@mipmap/bg_wifi"
+        android:divider="@drawable/divider_fgtab"
+        android:dividerHeight="1px"
+        android:paddingLeft="20px"
+        android:paddingRight="20px"
+        android:showDividers="middle">
+
+        <TableRow>
+
+            <TextView
+                style="@style/DeviceInfoTableTitle"
+                android:text="@string/fridge_model" />
+
+            <TextView
+                style="@style/DeviceInfoTableContent"
+                android:text="已连接" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                style="@style/DeviceInfoTableTitle"
+                android:text="@string/device_id" />
+
+            <TextView
+                android:id="@+id/tl_tv_wifiStrength"
+                style="@style/DeviceInfoTableContent"
+                android:text="强" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                style="@style/DeviceInfoTableTitle"
+                android:text="@string/system_version" />
+
+            <TextView
+                android:id="@+id/tl_tv_wifiSpeed"
+                style="@style/DeviceInfoTableContent"
+                android:text="72Mbps" />
+        </TableRow>
+    </TableLayout>
+
+    <LinearLayout
+        android:id="@+id/llLog"
+        android:layout_width="match_parent"
+        android:layout_height="100px"
+        android:layout_marginTop="40px"
+        android:background="@mipmap/bg_wifi"
+        android:clickable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/DeviceInfoTableTitle"
+            android:text="@string/device_log" />
+
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20px"
+            android:src="@mipmap/ic_arrow_down" />
+
+    </LinearLayout>
+
+    <com.github.aakira.expandablelayout.ExpandableLinearLayout
+        android:id="@+id/expandItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@drawable/divider_fgtab"
+        android:dividerHeight="1px"
+        android:orientation="vertical"
+        android:background="@mipmap/log_bg"
+        android:descendantFocusability="afterDescendants"
+        android:layout_marginTop="-5px"
+        android:paddingEnd="20px"
+        android:paddingStart="20px"
+        android:showDividers="middle">
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/kerLog"
+            android:layout_width="match_parent"
+            android:layout_height="105px"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="20px"
+            android:paddingStart="20px" />
+
+        <com.midea.fridgesettings.view.SwitchEntry
+            android:id="@+id/sysLog"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="20px"
+            android:paddingStart="20px" />
+
+    </com.github.aakira.expandablelayout.ExpandableLinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10px"
+        android:layout_marginTop="40px"
+        android:text="@string/system_settings"
+        android:textSize="@dimen/content_text" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13px"
+        android:background="@mipmap/bg_wifi"
+        android:divider="@drawable/divider_fgtab"
+        android:dividerHeight="1px"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:showDividers="middle">
+
+        <TextView
+            style="@style/SystemSettingsTextStyle"
+            android:text="@string/refresh" />
+
+        <TextView
+            style="@style/SystemSettingsTextStyle"
+            android:text="@string/recovery" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10px"
+        android:layout_marginTop="40px"
+        android:text="@string/midea_qq"
+        android:textSize="@dimen/content_text" />
+
+    <include layout="@layout/midea_qq_layout"/>
+</LinearLayout>

@@ -1,0 +1,190 @@
+package com.midea.fridgesettings
+
+import android.content.ComponentName
+import android.content.Intent
+import android.graphics.Bitmap
+import android.os.Handler
+import android.os.Message
+import android.util.Log
+import android.util.LruCache
+import android.view.View
+import com.android.volley.toolbox.ImageLoader
+import com.android.volley.toolbox.Volley
+import com.midea.fridge.utils.accountutil.AccountUtil
+import com.midea.fridgesettings.utils.JumpShopUtil
+import com.midea.fridgesettings.utils.UrlManager
+import kotlinx.android.synthetic.main.fragment_user.*
+import org.jetbrains.anko.imageResource
+import org.jetbrains.anko.sdk25.coroutines.onClick
+import org.jetbrains.anko.textColor
+import org.jetbrains.anko.toast
+
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class UserFragment(type: FragmentTag) : BaseFragment(type) {
+    private val TAG = "UserFragment"
+
+    private val mQueue by lazy { Volley.newRequestQueue(context) }
+    private val listener by lazy { ImageLoader.getImageListener(profile, R.mipmap.ic_profile, R.mipmap.ic_profile) }
+    private val imageLoader by lazy {
+        ImageLoader(mQueue, object : ImageLoader.ImageCache {
+            private val mCache: LruCache<String, Bitmap>
+            private var sizeValue: Int = 0
+
+            init {
+                val maxSize = 10 * 1024 * 1024
+                mCache = object : LruCache<String, Bitmap>(maxSize) {
+                    override fun sizeOf(key: String, value: Bitmap): Int {
+                        sizeValue = value.rowBytes * value.height
+                        return sizeValue
+                    }
+                }
+            }
+
+            override fun putBitmap(url: String, bitmap: Bitmap) {
+                mCache.put(url, bitmap)
+            }
+
+            override fun getBitmap(url: String): Bitmap? {
+                return mCache.get(url)
+            }
+        })
+    }
+
+    private val REQUEST_LOGIN = 1001
+    private val mHandler = object : Handler() {
+        override fun handleMessage(msg: Message) {
+            when (msg.what) {
+                REQUEST_LOGIN -> {
+                    goToLoginActivity()
+                }
+            }
+        }
+    }
+
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_user
+
+    override fun initViewsAndEvents() {
+        super.initViewsAndEvents()
+        order.setOnClickListener { onButtonClick(it) }
+        favorite.setOnClickListener { onButtonClick(it) }
+        message.setOnClickListener { onButtonClick(it) }
+        account.setOnClickListener { onButtonClick(it) }
+        quit.setOnClickListener { onButtonClick(it) }
+    }
+
+    private fun onButtonClick(it: View?) {
+        val id = it?.id
+        val info = AccountUtil.getInstance().loginInfo
+        if (info != null) {
+
+            when (id) {
+                R.id.order -> {
+                    JumpShopUtil.jumpToFridgeShop(activity, JumpShopUtil.ORDER_ALL_URL)
+                }
+
+                R.id.favorite -> {
+                    val intent = Intent()
+                    intent.component = ComponentName("com.midea.fridge.pad", "com.midea.fridge.pad.usercenter.MyCollectionActivity")
+                    startActivity(intent)
+                }
+
+                R.id.message -> {
+                    val intent = Intent()
+                    intent.component = ComponentName("com.midea.fridge.pad", "com.midea.fridge.pad.messagecenter.MessageHomeActivity")
+                    startActivity(intent)
+                }
+
+                R.id.account -> {
+                    val intent = Intent()
+                    intent.component = ComponentName("com.midea.fridge.pad", "com.midea.fridge.pad.usercenter.AccountSecurityActivity")
+                    startActivity(intent)
+                }
+
+                R.id.quit -> {
+                    val intent = Intent()
+                    intent.component = ComponentName("com.midea.fridge.pad", "com.midea.fridge.pad.usercenter.LogoutActivity")
+                    startActivityForResult(intent, 1)
+                }
+            }
+        } else {
+
+            when (id) {
+
+                R.id.quit -> {
+                    mHandler.removeMessages(REQUEST_LOGIN)
+                    mHandler.sendEmptyMessage(REQUEST_LOGIN)
+                }
+
+                else -> {
+                    toast(resources.getString(R.string.please_login))
+                }
+            }
+        }
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+        val info = AccountUtil.getInstance().loginInfo
+        if (info == null) {
+            mHandler.removeMessages(REQUEST_LOGIN)
+            mHandler.sendEmptyMessage(REQUEST_LOGIN)
+        } else {
+            refreshUI(true)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d(TAG, "Is Login?")
+        val info = AccountUtil.getInstance().loginInfo
+        refreshUI(info != null)
+    }
+
+
+    private fun refreshUI(isLogin: Boolean) {
+        if (isLogin) {
+            order.visibility = View.VISIBLE
+            favorite.visibility = View.VISIBLE
+            message.visibility = View.VISIBLE
+            account.visibility = View.VISIBLE
+            val userDate = AccountUtil.getInstance().loginInfo.userData
+            Log.d(TAG, userDate.toString())
+            imageLoader.get("${UrlManager.PHOTO_URL}${userDate.uid}.jpg",
+                    listener, 160, 160)
+            nickName.text = if (!userDate.nickname.isNullOrEmpty())
+                userDate.nickname
+            else
+                userDate.mobile
+            quit.text = resources.getString(R.string.quit)
+            quit.textColor = resources.getColor(R.color.colorQuit)
+        } else {
+            order.visibility = View.GONE
+            favorite.visibility = View.GONE
+            message.visibility = View.GONE
+            account.visibility = View.GONE
+            profile.imageResource = R.mipmap.ic_profile
+            nickName.text = resources.getString(R.string.not_login)
+            quit.text = resources.getString(R.string.login)
+            quit.textColor = resources.getColor(R.color.colorLogin)
+        }
+    }
+
+    private fun goToLoginActivity() {
+        val intent = Intent(Intent.ACTION_MAIN)
+        intent.addCategory(Intent.CATEGORY_DEFAULT)
+        val cn = ComponentName("com.midea.fridge.pad", "com.midea.fridge.pad.login.LoginActivity")
+        intent.component = cn
+        startActivityForResult(intent, 0)
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+    }
+}

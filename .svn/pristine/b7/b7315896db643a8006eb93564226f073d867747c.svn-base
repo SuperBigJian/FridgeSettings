@@ -1,0 +1,11 @@
+package com.midea.fridge.pad.usercenter;
+
+/**
+ * Created by Administrator on 2017/7/20.
+ */
+
+public class SignReturnData {
+    public int code;
+    public String msg;
+    public SignData data;
+}

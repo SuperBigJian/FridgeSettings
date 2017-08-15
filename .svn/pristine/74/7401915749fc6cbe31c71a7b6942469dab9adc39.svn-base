@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20px">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/bg_wifi"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="250px">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="110px"
+            android:src="@mipmap/fridge" />
+
+        <TextView
+            android:id="@+id/device"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20px"
+            android:textColor="#9B9B9B"
+            android:textSize="@dimen/content_text" />
+
+        <TextView
+            android:id="@+id/version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20px"
+            android:ellipsize="end"
+            android:maxEms="20"
+            android:maxLines="1"
+            android:textColor="#9B9B9B"
+            android:textSize="@dimen/content_text" />
+
+        <TextView
+            android:id="@+id/tv_curState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="50px"
+            android:text="当前版本已是最新版本"
+            android:textColor="#4A90E2"
+            android:textSize="@dimen/content_text" />
+
+        <ImageView
+            android:id="@+id/iv_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:src="@mipmap/ic_wifi_load" />
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="600px"
+            android:layout_height="8px"
+            android:layout_marginBottom="120px"
+            android:layout_marginTop="50px"
+            android:maxHeight="8px"
+            android:progress="80"
+            android:progressDrawable="@drawable/seek_progress" />
+
+        <Button
+            android:id="@+id/btUpdate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="120px"
+            android:layout_marginTop="50px"
+            android:background="@drawable/bt_update_bg" />
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,136 @@
+package com.midea.fridgesettings
+
+import android.provider.Settings
+import android.util.Log
+import android.widget.SeekBar
+import com.midea.fridge.utils.fridgecontrolutil.PadControlUtil
+import kotlinx.android.synthetic.main.fragment_display.*
+import org.jetbrains.anko.textResource
+import org.jetbrains.anko.toast
+
+
+/**
+ * Created by chenjian on 6/1/17.
+ */
+class DisplayFragment(type: FragmentTag) : BaseFragment(type) {
+    private var currentBrightness: Int = 125
+    private var maxBrightness: Int = 255
+    private var currentDis: Int = 0
+    private var maxDis: Int = 20
+    private val contentResolver by lazy { activity.contentResolver }
+    override fun getContentViewLayoutId(): Int = R.layout.fragment_display
+
+    override fun initViewsAndEvents() {
+        with(pb_brightness) {
+            title.textResource = R.string.brightness
+            seek.max = maxBrightness
+            seek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    setWindowBrightness(progress)
+                    saveScreenBrightness(progress)
+                    currentBrightness = getScreenBrightness()
+                    seek.progress = currentBrightness
+                    value.text = (currentBrightness * 100 / maxBrightness).toString()
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+                }
+            })
+        }
+
+        with(pb_sensor) {
+            title.textResource = R.string.psensor
+            seek.max = maxDis
+            seek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    currentDis = progress
+                    value.text = progress.toString()
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    PadControlUtil.getInstance().ir = currentDis
+                    if (currentDis != PadControlUtil.getInstance().ir) {
+                        activity.toast("距离设置出现异常")
+                        initSensor()
+                    }
+                    Log.d("chenjian", "---${PadControlUtil.getInstance().ir}")
+                }
+            })
+        }
+    }
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+        initBrightness()
+        initSensor()
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
+    override fun destroyViewAndThing() {
+        super.destroyViewAndThing()
+    }
+
+    private fun initBrightness() {
+        with(pb_brightness) {
+            currentBrightness = getScreenBrightness()
+            seek.progress = currentBrightness
+            value.text = (currentBrightness * 100 / maxBrightness).toString()
+        }
+    }
+
+    private fun initSensor() {
+        with(pb_sensor) {
+            if (PadControlUtil.getInstance().ir < 0) {
+                currentDis = 5
+                PadControlUtil.getInstance().ir = currentDis
+            } else {
+                currentDis = PadControlUtil.getInstance().ir
+            }
+            seek.progress = currentDis
+            value.text = seek.progress.toString()
+        }
+    }
+
+    fun setScreenManualMode() {
+        try {
+            val mode = Settings.System.getInt(contentResolver,
+                    Settings.System.SCREEN_BRIGHTNESS_MODE)
+            if (mode == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC) {
+                Settings.System.putInt(contentResolver, Settings.System.SCREEN_BRIGHTNESS_MODE,
+                        Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
+            }
+        } catch (e: Settings.SettingNotFoundException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun getScreenBrightness(): Int {
+        return Settings.System.getInt(contentResolver,
+                Settings.System.SCREEN_BRIGHTNESS, currentBrightness)
+    }
+
+    private fun saveScreenBrightness(value: Int) {
+        setScreenManualMode()
+        Settings.System.putInt(contentResolver,
+                Settings.System.SCREEN_BRIGHTNESS, value)
+    }
+
+    private fun setWindowBrightness(brightness: Int) {
+        val window = activity.window
+        val lp = window.attributes
+        lp.screenBrightness = brightness / 255.0f
+        window.attributes = lp
+    }
+}

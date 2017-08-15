@@ -1,0 +1,201 @@
+package com.midea.fridge.pad.widget;
+
+import android.app.Dialog;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import com.midea.fridge.pad.R;
+
+/**
+ * Created by Administrator on 2016/1/21.
+ */
+public class CustomDialog extends Dialog {
+
+    private Context context;
+    private ProgressBar mProgressBar;
+    private TextView mPercentTv, mProgressTv;
+
+    public CustomDialog(Context context, boolean cancelable, OnCancelListener cancelListener) {
+        super(context, cancelable, cancelListener);
+        this.context = context;
+    }
+
+    public CustomDialog(Context context, int theme) {
+        super(context, R.style.dialog);
+        this.context = context;
+    }
+
+    public CustomDialog(Context context) {
+        super(context, R.style.dialog);
+        this.context = context;
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    public void createUnfreezeDialog(final ButtonListener listener) {
+        View view = LayoutInflater.from(context).inflate(R.layout.ufreeze_dialog, null);
+        Button submit = (Button) view.findViewById(R.id.submit);
+        Button cancel = (Button) view .findViewById(R.id.cancel);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.submit();
+                dismiss();
+            }
+        });
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.cancel();
+                dismiss();
+            }
+        });
+        getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        addContentView(view, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        view.getBackground().setAlpha((int) (0.6 * 255));
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                dismiss();
+                return false;
+            }
+        });
+        show();
+    }
+
+    public void createMessageDailog(final ButtonListener listener){
+        View view = LayoutInflater.from(context).inflate(R.layout.note_book_dialog, null);
+        Button submit = (Button) view.findViewById(R.id.submit);
+        Button cancel = (Button) view .findViewById(R.id.cancel);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.submit();
+                dismiss();
+            }
+        });
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.cancel();
+                dismiss();
+            }
+        });
+        getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        addContentView(view, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        view.getBackground().setAlpha((int) (0.6 * 255));
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                dismiss();
+                return false;
+            }
+        });
+        show();
+    }
+
+    public void createLoginDialog(final ButtonListener listener) {
+        View view = LayoutInflater.from(context).inflate(R.layout.ufreeze_dialog, null);
+        Button submit = (Button) view.findViewById(R.id.submit);
+        Button cancel = (Button) view .findViewById(R.id.cancel);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.submit();
+                dismiss();
+            }
+        });
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.cancel();
+                dismiss();
+            }
+        });
+        getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        addContentView(view, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        view.getBackground().setAlpha((int) (0.6 * 255));
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                dismiss();
+                return false;
+            }
+        });
+        show();
+    }
+
+    public void createUpdateDialog(final ButtonListener listener, String content) {
+        View view = LayoutInflater.from(context).inflate(R.layout.update_dialog, null);
+        Button submit = (Button) view.findViewById(R.id.submit);
+        Button cancel = (Button) view .findViewById(R.id.cancel);
+        TextView contentEt = (TextView) view .findViewById(R.id.content);
+        contentEt.setText(content);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.submit();
+                dismiss();
+            }
+        });
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.cancel();
+                dismiss();
+            }
+        });
+        getWindow().setLayout(640, 300);
+        addContentView(view, new LayoutParams(640, 300));
+//        view.getBackground().setAlpha((int) (0.6 * 255));
+        setCancelable(false);
+        show();
+    }
+
+    public void createDownLoadDialog(final ButtonListener listener) {
+        View view = LayoutInflater.from(context).inflate(R.layout.download_dialog, null);
+        Button submit = (Button) view.findViewById(R.id.submit);
+        mPercentTv = (TextView) view .findViewById(R.id.percent);
+        mProgressTv = (TextView) view .findViewById(R.id.kb);
+        mProgressBar = (ProgressBar) view.findViewById(R.id.my_progress);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.submit();
+                dismiss();
+            }
+        });
+        getWindow().setLayout(640, 300);
+        addContentView(view, new LayoutParams(640, 300));
+        setCancelable(false);
+        show();
+    }
+
+    public void setDownLoadProgress(int down, int total){
+        int progress = 0;
+        if(total > 0){
+            progress = (int) ((float)down / (float)total * 100);
+        }
+        mProgressBar.setProgress(progress);
+        mPercentTv.setText(progress + "%");
+        mProgressTv.setText(down + "kb / " + total + "kb");
+    }
+
+
+    public interface ButtonListener {
+        public void submit();
+        public void cancel();
+    }
+
+}

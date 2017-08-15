@@ -1,0 +1,78 @@
+package com.midea.hwstk;
+
+public class HwCtrl {
+    static {
+        System.loadLibrary("midea-hardware");
+    }
+
+    /*UART Control*/
+    public static native int openUart();
+    public static native int openUartByName(String devName, long baud, int dataBits, int stopBits);
+    public static native int closeUart(int fd);
+    public static native byte[] readUart(int fd);
+    public static native int writeUart(int fd, byte[]data,int len);
+
+    /*Fridge Control, based on openUart successfully*/
+    /*0200*/
+    public static native int enableMode(int mode);
+    public static native int disableMode(int mode);
+    public static native int setTemperature(int compartment,int temperature);
+    public static native int setVtMode(int mode);
+    public static native int switchOn(int compartment);
+    public static native int shutDown(int compartment);
+    public static native int setShow(int value);
+    public static native int setHumidity(int value);
+    /*0202*/
+    public static native int setReportMode(int mode, int interval);
+    /*0209*/
+    public static native int setHandleLight(int value);
+    public static native int needWakeUp(int value);
+    public static native int zeroWeigh(int id);
+    public static native int calibrateWeigh(int id);
+    public static native int setTopLight(int id);
+    public static native int forceRun();
+    public static native int forceDefrost(int compartment);
+    public static native int disableExtra();
+    /*03*/
+    public static native int getConfiguration();
+    public static native int syncConfiguration();
+    public static native int getQAState();
+    public static native int checkAbnormal();
+    public static native int getQAReport();
+    public static native int getExtra();
+    public static native int weigh();
+    /*0711E1ED*/
+    public static native int getSN();
+    public static native int setSN(String sn);
+    public static native int commonSupport();
+    public static native int reportSensor();
+
+    /*Camera Control*/
+    public static native int powerOnUsbCamera();
+    public static native int powerOffUsbCamera();
+    public static native byte[] readUsbCamera(int id);
+    public static native byte[] readUsbCameraByName(String devName);
+    public static native int checkUsbCamera(int id);
+
+    /*Board Control*/
+    public static native int setBackLightOn();
+    public static native int setBackLightOff();
+    public static native int setSuspendTime(int second);
+    public static native int setSideLight(int value);
+    public static native int setSilentReboot(int value);
+    public static native int setGesture(int value);
+    public static native int getGesture();
+    public static native int enableIR();
+    public static native int disableIR();
+    public static native int setIR(int value);
+    public static native int getIR();
+    public static native int getTpVersion();
+
+    /*RFID Contorl*/
+    public static native int rfidInit();
+    public static native int rfidUninit();
+    public static native byte[] rfidRead(int scan_time, int cycle, int read_power, int ant1, int ant2, int ant3, int ant4);
+
+    /*Net Control*/
+    public static native int getHeartBeatInterval(int preHBret, int isActive, int hasPush);
+}

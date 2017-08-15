@@ -1,0 +1,315 @@
+package com.midea.fridgesettings
+
+import android.app.AlertDialog
+import android.app.ProgressDialog
+import android.content.Context
+import android.content.Intent
+import android.graphics.Color
+import android.media.AudioManager
+import android.media.SoundPool
+import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
+import android.text.TextUtils
+import android.view.Gravity
+import android.view.View
+import com.midea.fridge.utils.fridgecontrolutil.FridgeControlUtil
+import com.midea.fridge.utils.fridgecontrolutil.FridgeExtendStatus
+import com.midea.fridge.utils.fridgecontrolutil.FridgeStatus
+import com.midea.fridge.utils.fridgecontrolutil.OnControlListener
+import com.midea.fridgesettings.view.SwitchEntry
+import kotlinx.android.synthetic.main.activity_developer.*
+import org.jetbrains.anko.sdk25.coroutines.onCheckedChange
+import org.jetbrains.anko.textColor
+import org.jetbrains.anko.toast
+import java.io.*
+import java.net.NetworkInterface
+import java.net.SocketException
+import java.util.*
+
+
+class DeveloperActivity : AppCompatActivity() {
+    private val loadDialog: ProgressDialog by lazy { ProgressDialog(this) }
+    private var mIsDefors: Boolean = false
+    private var mIsDefors2: Boolean = false
+    private var mIsDefors3: Boolean = false
+    private var mIsDefors4: Boolean = false
+    private var mIsForcerun: Boolean = false
+    private var timer: Timer? = null
+    private var task: TimerTask? = null
+    private var mIsShow: Boolean = false
+    private val soundPool: SoundPool by lazy { SoundPool(1, AudioManager.STREAM_MUSIC, 100) }
+    private var soundId: Int = 0
+
+    private val onControlListener = object : OnControlListener<FridgeExtendStatus> {
+        override fun onControlResponse(fridgeExtendStatus: FridgeExtendStatus) {
+            dismissProgressDialog()
+            mIsDefors = fridgeExtendStatus.isForceDefrostingAll
+            mIsDefors2 = fridgeExtendStatus.isForceDefrostingFreeze
+            mIsDefors3 = fridgeExtendStatus.isForceDefrostingCool
+            mIsDefors4 = fridgeExtendStatus.isForceDefrostingVary
+            mIsForcerun = fridgeExtendStatus.isForceRun
+        }
+
+        override fun onControlTimeout() {
+            dismissProgressDialog()
+        }
+
+        override fun onControlException() {
+            dismissProgressDialog()
+        }
+    }
+
+    private val onFridgeListener = object : OnControlListener<FridgeStatus> {
+        override fun onControlResponse(fridgeStatus: FridgeStatus) {
+            dismissProgressDialog()
+            mIsShow = fridgeStatus.isShowMode
+            playVoice()
+        }
+
+        override fun onControlTimeout() {
+
+        }
+
+        override fun onControlException() {
+
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_developer)
+        initViewAndEvent()
+    }
+
+    private fun initViewAndEvent() {
+        initSwitch(forceRun, "强制运行")
+        initSwitch(forceDefrosting, "强制化霜")
+        initSwitch(displayMode, "商演模式")
+
+        tvMac.text = getMacAddress()
+        showProgressDialog("")
+        soundId = soundPool.load(this, R.raw.beep, 1)
+        startTimer()// 轮询冰箱状态
+
+        FridgeControlUtil.getInstance().queryFridgeExtendStatus(onControlListener)
+        FridgeControlUtil.getInstance().queryFridgeStatus(onFridgeListener)
+    }
+
+    private fun initSwitch(view: SwitchEntry, str: String) {
+        with(view) {
+            tvTitle.textSize = 24f
+            tvTitle.textColor = Color.rgb(103, 107, 108)
+            tvTitle.text = str
+            switch.onCheckedChange { buttonView, isChecked ->
+                onSwichChange(view, isChecked)
+            }
+        }
+    }
+
+    private fun onSwichChange(view: SwitchEntry, boolean: Boolean) {
+        when (view.id) {
+            R.id.forceRun -> {
+                if (mIsDefors || mIsDefors2 || mIsDefors3 || mIsDefors4) {
+                    toast("关闭强制化霜后，才能进行此操作")
+                } else {
+                    if (mIsForcerun) {
+                        FridgeControlUtil.getInstance().disableDefrostingAndRun(onControlListener)
+                    } else {
+                        FridgeControlUtil.getInstance().forceRun(onControlListener)
+                    }
+                    showProgressDialog("")
+                }
+            }
+
+            R.id.forceDefrosting -> {
+                if (mIsForcerun) {
+                    toast("关闭强制运行后，才能进行此操作")
+                } else {
+                    if (mIsDefors) {
+                        FridgeControlUtil.getInstance().disableDefrostingAndRun(onControlListener)
+                    } else {
+                        FridgeControlUtil.getInstance().forceDefrosting(32, onControlListener)
+                    }
+                    showProgressDialog("")
+                }
+            }
+
+            R.id.displayMode -> {
+                showProgressDialog("")
+                if (mIsShow) {
+                    FridgeControlUtil.getInstance().setShow(0, onFridgeListener)
+                } else {
+                    FridgeControlUtil.getInstance().setShow(1, onFridgeListener)
+                }
+            }
+
+        }
+    }
+
+    fun back(view: View) {
+        onBackPressed()
+    }
+
+    /**
+     * KernelVersion
+     * 内核版本
+     * return String
+     */
+    private fun getKernelVersion(): String {
+        var kernelVersion = ""
+        var inputStream: InputStream? = null
+        try {
+            inputStream = FileInputStream("/proc/version")
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+            return kernelVersion
+        }
+
+        val bufferedReader = BufferedReader(InputStreamReader(inputStream), 8 * 1024)
+        var info = ""
+        var line = ""
+        try {
+            line = bufferedReader.readLine()
+            while (!line.isNullOrEmpty()) {
+                info += line
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            try {
+                bufferedReader.close()
+                inputStream.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+
+        }
+
+        try {
+            if (info !== "") {
+                val keyword = "version "
+                var index = info.indexOf(keyword)
+                line = info.substring(index + keyword.length)
+                index = line.indexOf(" ")
+                kernelVersion = line.substring(0, index)
+            }
+        } catch (e: IndexOutOfBoundsException) {
+            e.printStackTrace()
+        }
+
+        return kernelVersion
+    }
+
+
+    /**
+     * MAC Address
+     * 内核版本
+     * return String
+     */
+    private fun getMacAddress(): String {
+        var macAddress: String? = null
+        val buf = StringBuffer()
+        var networkInterface: NetworkInterface? = null
+        try {
+            networkInterface = NetworkInterface.getByName("eth1")
+            if (networkInterface == null) {
+                networkInterface = NetworkInterface.getByName("wlan0")
+            }
+            if (networkInterface == null) {
+                return "02:00:00:00:00:02"
+            }
+            val address = networkInterface.hardwareAddress
+            for (b in address) {
+                buf.append(String.format("%02X:", b))
+            }
+            if (buf.length > 0) {
+                buf.deleteCharAt(buf.length - 1)
+            }
+            macAddress = buf.toString()
+        } catch (e: SocketException) {
+            e.printStackTrace()
+            return "02:00:00:00:00:02"
+        }
+
+        return macAddress
+    }
+
+    private fun showDialog(message: String, home: Boolean) {
+        val builder = AlertDialog.Builder(this)
+        builder.setMessage("确认退出吗？如果退出则停止" + message)
+        builder.setTitle("提示")
+        builder.setPositiveButton("确认") { dialog, which ->
+            endCount()
+            FridgeControlUtil.getInstance().disableDefrostingAndRun(onControlListener)
+            dialog.dismiss()
+            if (home) {
+                val i = Intent(Intent.ACTION_MAIN)
+                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                i.addCategory(Intent.CATEGORY_HOME)
+                startActivity(i)
+            }
+            finish()
+        }
+        builder.setNegativeButton("取消") { dialog, which -> dialog.dismiss() }
+        val alertDialog = builder.create()
+        alertDialog.window!!.setGravity(Gravity.CENTER)
+        alertDialog.show()
+    }
+
+    fun showProgressDialog(message: String) {
+        var message = message
+        if (!loadDialog.isShowing) {
+            if (TextUtils.isEmpty(message)) {
+                message = "请等待..."
+            }
+            loadDialog.setMessage(message)
+            loadDialog.setCancelable(true)
+            loadDialog.window.setGravity(Gravity.CENTER)
+            loadDialog.show()
+        }
+    }
+
+    fun dismissProgressDialog() {
+        if (loadDialog != null && loadDialog.isShowing) {
+            loadDialog.dismiss()
+        }
+    }
+
+    private fun startTimer() {
+        if (timer == null) {
+            timer = Timer()
+        }
+        if (task == null) {
+            task = object : TimerTask() {
+                override fun run() {
+                    FridgeControlUtil.getInstance().queryFridgeExtendStatus(onControlListener)
+                }
+            }
+        }
+        try {
+            timer?.schedule(task, 0, 60000)
+        } catch (exception: IllegalStateException) {
+        }
+
+    }
+
+    private fun endCount() {
+        if (timer != null) {
+            timer?.cancel()
+            timer = null
+        }
+
+        if (task != null) {
+            task?.cancel()
+            task = null
+        }
+    }
+
+    private fun playVoice() {
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val audioMaxVolumn = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toFloat()
+        val audioCurrentVolumn = am.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
+        val volumnRatio = audioCurrentVolumn / audioMaxVolumn
+        soundPool?.play(soundId, volumnRatio, volumnRatio, 1, 0, 1f)
+    }
+}

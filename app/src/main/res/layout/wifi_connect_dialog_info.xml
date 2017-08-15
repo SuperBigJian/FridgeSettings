@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tl_wifiInfo"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:stretchColumns="0">
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/wifi_state" />
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="已连接" />
+
+        </TableRow>
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/wifi_strength" />
+
+            <TextView
+                android:id="@+id/tl_tv_wifiStrength"
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="强" />
+        </TableRow>
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/wifi_speed" />
+
+            <TextView
+                android:id="@+id/tl_tv_wifiSpeed"
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="72Mbps" />
+        </TableRow>
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/ip_adress" />
+
+            <TextView
+                android:id="@+id/tl_tv_ipAddress"
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="192.168.0.1" />
+        </TableRow>
+
+        <TableRow style="@style/WifiDialogInfoTable">
+
+            <TextView
+                style="@style/WifiDialogInfoTableTextView"
+                android:text="@string/security" />
+
+            <TextView
+                android:id="@+id/tl_tv_security"
+                style="@style/WifiDialogInfoTableTextView"
+                android:layout_gravity="end"
+                android:text="WPA/WP2 PSK" />
+        </TableRow>
+
+</TableLayout>

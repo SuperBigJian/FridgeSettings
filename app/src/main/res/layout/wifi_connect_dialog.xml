@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="800px"
+    android:layout_height="wrap_content"
+    android:background="@mipmap/bg_wifi"
+    android:orientation="vertical"
+    android:paddingBottom="50px"
+    android:paddingEnd="40px"
+    android:paddingStart="40px"
+    android:paddingTop="50px">
+
+    <TextView
+        android:id="@+id/tv_wifi_dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20px"
+        android:textColor="#636262"
+        android:textSize="30px" />
+
+    <include
+        android:id="@+id/dialogInfo"
+        layout="@layout/wifi_connect_dialog_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <include
+        android:id="@+id/dialogCus"
+        layout="@layout/wifi_connect_dialog_cus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <include
+        android:id="@+id/dialogPsd"
+        layout="@layout/wifi_connect_dialog_psd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <include
+        android:id="@+id/dialogCon"
+        layout="@layout/wifi_connect_dialog_con"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20px"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/bt_wifi_dialog_remove"
+            android:layout_width="220px"
+            android:layout_height="70px"
+            android:layout_alignParentStart="true"
+            android:background="@drawable/bt_wifi_cancel"
+            android:text="@string/remove_password"
+            android:textColor="#FF7B00"
+            android:textSize="36px" />
+
+        <Button
+            android:id="@+id/bt_wifi_dialog_cancel"
+            android:layout_width="220px"
+            android:layout_height="70px"
+            android:layout_alignParentStart="true"
+            android:background="@drawable/bt_wifi_cancel"
+            android:text="@string/cancel"
+            android:textColor="#FF7B00"
+            android:textSize="36px" />
+
+        <Button
+            android:id="@+id/bt_wifi_dialog_connect"
+            android:layout_width="220px"
+            android:layout_height="70px"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/bt_wifi_ok"
+            android:enabled="false"
+            android:text="@string/connect"
+            android:textColor="#FFF"
+            android:textSize="36px" />
+
+        <Button
+            android:id="@+id/bt_wifi_dialog_join"
+            android:layout_width="220px"
+            android:layout_height="70px"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/bt_wifi_ok"
+            android:text="@string/join"
+            android:textColor="#FFF"
+            android:textSize="36px" />
+    </RelativeLayout>
+
+</LinearLayout>
